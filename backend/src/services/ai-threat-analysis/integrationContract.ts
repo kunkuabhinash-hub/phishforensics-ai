@@ -23,9 +23,10 @@ export interface FullInvestigationResult {
 export async function runFullInvestigation(
   rawInputs: RawArtifactInput | RawArtifactInput[],
   options: AnalysisInputOptions = {},
-  crossInvestigationExplanations: CrossInvestigationPatternExplanation[] = []
+  crossInvestigationExplanations: CrossInvestigationPatternExplanation[] = [],
+  customProvider?: any
 ): Promise<FullInvestigationResult> {
-  const pipeline = new ThreatAnalysisPipeline();
+  const pipeline = new ThreatAnalysisPipeline(customProvider);
   
   // 1. Analyze and generate canonical truth
   const { canonicalResult } = await pipeline.analyzeWithAudit(rawInputs, options);

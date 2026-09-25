@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const AnalyzeService = require('../services/analyzeService');
 const AppError = require('../utils/AppError');
+const { normalizeInput } = require('../utils/inputNormalizer');
 
 const analyzeContent = async (req, res, next) => {
     // Generate a unique identifier for this analysis request
@@ -19,16 +20,12 @@ const analyzeContent = async (req, res, next) => {
             return next(new AppError(`Invalid type. Must be one of: ${validTypes.join(', ')}`, 400, analysisId));
         }
 
-        // 2. Construct input metadata adhering to the shared contract
-        const inputMetadata = {
-            type,
-            content,
-            source: source || 'unknown',
-            timestamp: new Date().toISOString()
-        };
+        // 2. Input Normalization
+        // Transforms raw validated input into a consistent internal representation for the AI
+        const normalizedInput = normalizeInput(analysisId, type, content, source);
 
         // 3. Hand off to the analysis service
-        const result = await AnalyzeService.processContent(analysisId, inputMetadata);
+        const result = await AnalyzeService.processContent(analysisId, normalizedInput);
         
         // 4. Return the PhishForensicsResult (won't be reached until AI is connected)
         return res.status(200).json(result);

@@ -1,23 +1,18 @@
 const AnalyzeService = require('../services/analyzeService');
+const AppError = require('../utils/AppError');
 
-const analyzeContent = async (req, res) => {
+const analyzeContent = async (req, res, next) => {
     try {
         const { type, content, source } = req.body;
 
-        // 1. Validation
+        // 1. Validation - pass errors to centralized handler via next()
         if (!type || !content) {
-            return res.status(400).json({
-                error: 'Bad Request',
-                message: 'Missing required fields: type and content are required.'
-            });
+            return next(new AppError('Missing required fields: type and content are required.', 400));
         }
 
         const validTypes = ['text', 'url', 'email', 'image', 'other'];
         if (!validTypes.includes(type)) {
-            return res.status(400).json({
-                error: 'Bad Request',
-                message: `Invalid type. Must be one of: ${validTypes.join(', ')}`
-            });
+            return next(new AppError(`Invalid type. Must be one of: ${validTypes.join(', ')}`, 400));
         }
 
         // 2. Construct input metadata adhering to the shared contract
@@ -36,18 +31,11 @@ const analyzeContent = async (req, res) => {
 
     } catch (error) {
         if (error.message === 'NOT_IMPLEMENTED_AI_ENGINE_PENDING') {
-            return res.status(501).json({
-                error: 'Not Implemented',
-                message: 'The AI analysis engine is not yet connected to the pipeline.',
-                status: 'pending_ai_integration'
-            });
+            return next(new AppError('The AI analysis engine is not yet connected to the pipeline.', 501));
         }
         
-        console.error('Analyze Controller Error:', error);
-        return res.status(500).json({
-            error: 'Internal Server Error',
-            message: 'An unexpected error occurred during analysis.'
-        });
+        // Let the centralized error handler deal with unexpected errors
+        next(error);
     }
 };
 

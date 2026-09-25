@@ -8,30 +8,26 @@ const { validatePhishForensicsResult } = require('../../../shared/validateContra
 class AnalyzeService {
     /**
      * Process the suspicious content
+     * @param {string} analysisId 
      * @param {import('../../../shared/types').InputMetadata} inputMetadata
      * @returns {Promise<import('../../../shared/types').PhishForensicsResult>}
      */
-    static async processContent(inputMetadata) {
+    static async processContent(analysisId, inputMetadata) {
         try {
-            // 1. Pass the validated input to the AI engine boundary
-            const aiResult = await AIEngine.analyze(inputMetadata);
+            console.log(`[AnalyzeService] Starting analysis for ID: ${analysisId}`);
+            
+            // 1. Pass the tracing ID and validated input to the AI engine boundary
+            const aiResult = await AIEngine.analyze(analysisId, inputMetadata);
             
             // 2. Validate the result returned by the AI engine
-            // If Hemanth's AI returns a malformed response, this will throw an error
-            // preventing bad data from reaching the frontend or downstream modules.
             validatePhishForensicsResult(aiResult);
             
-            // 3. FUTURE PIPELINE STEPS (Do NOT implement yet):
-            // - Attack DNA Extraction (Yashu)
-            // - Attack Reconstruction Pipeline (Yashu)
-            // - Safe Simulation Setup (Monish)
+            // 3. FUTURE PIPELINE STEPS (Do NOT implement yet)
             
-            // 4. Return the fully processed result back to the controller
             return aiResult;
             
         } catch (error) {
-            // Propagate errors cleanly to the controller
-            console.error('[AnalyzeService] Error processing content:', error.message);
+            console.error(`[AnalyzeService] Error processing content for ID: ${analysisId} - ${error.message}`);
             throw error;
         }
     }

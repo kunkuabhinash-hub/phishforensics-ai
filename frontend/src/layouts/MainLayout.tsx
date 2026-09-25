@@ -1,10 +1,6 @@
-import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link } from 'react-router-dom';
 
 export default function MainLayout() {
-  const location = useLocation();
-  const isDashboard = location.pathname.includes('/dashboard');
-
   return (
     <div className="layout-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
@@ -28,7 +24,7 @@ export default function MainLayout() {
           </Link>
 
           {/* Nav Links */}
-          <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center', display: 'none' }} className="desktop-nav">
+          <nav style={{ display: 'none', gap: '2rem', alignItems: 'center' }} className="desktop-nav">
             {['Product', 'How It Works', 'Attack DNA', 'Forensics', 'Dashboard'].map((link) => (
               <a href="#" key={link} className="mono-label" style={{ color: 'var(--text-primary)', transition: 'color 0.2s', fontWeight: 500 }}>
                 {link.toUpperCase()}

@@ -9,11 +9,11 @@
   /* ─── COLOR TOKENS ─────────────────────────────────────────────────────── */
   
   /* Bright / Editorial Surfaces */
-  --bg-primary: #F5F7F8;
-  --bg-warm-white: #FAFAF8;
+  --bg-primary: #F1F4F6;
+  --bg-warm-white: #FFFFFF;
   --bg-pure-white: #FFFFFF;
-  --bg-light: #EEF2F4;
-  --bg-soft-blue: #E6EDF2;
+  --bg-light: #E8EDF1;
+  --bg-soft-blue: #E8EDF1;
   
   /* Text */
   --text-primary: #111827;
@@ -21,17 +21,17 @@
   --text-muted: #64748B;
   
   /* Borders */
-  --border-light: #D7DEE5;
-  --border-strong: #BFC9D4;
+  --border-light: #D1D9E0;
+  --border-strong: #D1D9E0;
   
   /* Accents */
   --blue-primary: #2563EB;
   --blue-bright: #3B82F6;
-  --cyan-accent: #06B6D4;
+  --cyan-accent: #0891B2;
   
   /* Dark Contrast Sections */
   --navy-deep: #0B1726;
-  --navy-dark: #101D2D;
+  --navy-dark: #142337;
   
   /* Semantic */
   --danger: #E11D48;

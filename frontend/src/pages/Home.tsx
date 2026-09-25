@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { analyzeArtifact } from '../services/api';
+import { apiService } from '../services/api';
 import type { AnalysisRequest, AnalysisResponse } from '../types';
 
 export default function Home() {
   const navigate = useNavigate();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [inputType, setInputType] = useState<'url' | 'email_text' | 'image'>('url');
+  const [inputType, setInputType] = useState<'url' | 'text' | 'image'>('url');
   const [inputValue, setInputValue] = useState('');
 
   const handleAnalyze = async (e: React.FormEvent) => {
@@ -23,7 +23,7 @@ export default function Home() {
     };
 
     try {
-      const result: AnalysisResponse = await analyzeArtifact(req);
+      const result: AnalysisResponse = await apiService.submitAnalysis(req);
       navigate('/dashboard', { state: { analysisResult: result } });
     } catch (err: any) {
       setError(err.message || 'An error occurred during analysis.');
@@ -38,7 +38,7 @@ export default function Home() {
       <section className="section section-light" style={{ minHeight: '90vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div className="container">
           <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '4rem', alignItems: 'center' }}>
-            <div className="hero-content" style={{ opacity: 0 }} ref={el => el && el.classList.add('animate-fade-up')}>
+            <div className="hero-content" style={{ opacity: 0 }} ref={el => { if (el) el.classList.add('animate-fade-up'); }}>
               <p className="mono-label" style={{ marginBottom: '1.5rem' }}>DIGITAL THREAT FORENSICS / 01</p>
               <h1 className="display-title" style={{ marginBottom: '1.5rem' }}>
                 DON'T JUST<br/>
@@ -61,7 +61,7 @@ export default function Home() {
               <form onSubmit={handleAnalyze} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '500px', backgroundColor: 'var(--bg-white)', padding: '2rem', border: '1px solid var(--border-light)', borderRadius: 'var(--r-md)' }}>
                 <p className="mono-label" style={{ color: 'var(--text-primary)' }}>START AN INVESTIGATION</p>
                 <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.5rem' }}>
-                  {['url', 'email_text', 'image'].map((type) => (
+                  {['url', 'text', 'image'].map((type) => (
                     <button 
                       key={type}
                       type="button" 
@@ -94,7 +94,7 @@ export default function Home() {
               </form>
             </div>
             
-            <div className="hero-visual" style={{ opacity: 0 }} ref={el => el && el.classList.add('animate-fade-up', 'animate-delay-2')}>
+            <div className="hero-visual" style={{ opacity: 0 }} ref={el => { if (el) el.classList.add('animate-fade-up', 'animate-delay-2'); }}>
               <div style={{ backgroundColor: 'var(--bg-pure-white)', border: '1px solid var(--border-strong)', padding: '2.5rem', borderRadius: 'var(--r-md)', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }}>
                 <p className="mono-label" style={{ marginBottom: '2rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '1rem' }}>FORENSIC ANALYSIS PREVIEW</p>
                 
@@ -176,7 +176,7 @@ export default function Home() {
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {['DETECT', 'UNDERSTAND', 'RECONSTRUCT', 'EDUCATE'].map((word, idx) => (
-                  <h3 key={idx} style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem', opacity: 0 }} ref={el => el && el.classList.add('animate-fade-up')} style={{ animationDelay: `${idx * 100}ms` }}>
+                  <h3 key={idx} style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem', opacity: 0, animationDelay: `${idx * 100}ms` }} ref={el => { if (el) el.classList.add('animate-fade-up'); }}>
                     {word}
                   </h3>
                 ))}
@@ -326,7 +326,7 @@ export default function Home() {
         <div className="container">
           <h2 className="section-title" style={{ textAlign: 'center', marginBottom: '4rem' }}>THE EVIDENCE BEHIND THE VERDICT.</h2>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.5rem', autoRows: 'minmax(150px, auto)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.5rem', gridAutoRows: 'minmax(150px, auto)' }}>
             
             <div style={{ gridColumn: 'span 8', backgroundColor: 'var(--bg-pure-white)', padding: '2rem', border: '1px solid var(--border-light)' }}>
               <p className="mono-label" style={{ marginBottom: '1rem' }}>EMAIL HEADERS</p>

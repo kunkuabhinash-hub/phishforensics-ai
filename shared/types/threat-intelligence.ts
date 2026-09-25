@@ -878,3 +878,37 @@ export interface CrossInvestigationPatternExplanation {
   suggestedNextActions: PatternNextInvestigationAction[];
 }
 
+// ============================================================================
+// 23. ANALYST INTELLIGENCE & INVESTIGATION BRIEF
+// ============================================================================
+
+export interface AnalystBriefNextAction {
+  action: string;
+  reason: string;
+  source: 'missing_evidence' | 'unresolved_question' | 'quality_warning' | 'cross_investigation';
+}
+
+export interface AnalystIntelligenceBrief {
+  investigationIdentity: {
+    investigationId: string;
+    timestamp: string;
+    status: string;
+  };
+  executiveSummary: string[];
+  threatAssessmentSummary: {
+    verdict: string | null;
+    severity: string | null;
+  };
+  keyFindings: FindingExplanation[];
+  evidenceHighlights: EvidenceItem[];
+  attackerBehaviorSummary: AnalystAttackDNAView[];
+  victimActionSummary: VictimRequestedAction;
+  reconstructionSummary: AnalystReconstructionStageView[];
+  uncertaintySummary: UncertaintyReport;
+  missingEvidenceSummary: MissingEvidenceItem[];
+  investigationQualitySummary: InvestigationQuality;
+  crossArtifactSummary: AnalystCorrelationView[];
+  crossInvestigationSummary: CrossInvestigationPatternExplanation[];
+  recommendedNextActions: AnalystBriefNextAction[];
+  traceabilitySummary: InvestigationTraceabilityAudit;
+}

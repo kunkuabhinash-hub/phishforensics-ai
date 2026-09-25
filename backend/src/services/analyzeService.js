@@ -1,4 +1,5 @@
 const AIEngine = require('./aiEngine');
+const { validatePhishForensicsResult } = require('../../../shared/validateContract');
 
 /**
  * Analysis Service
@@ -15,12 +16,17 @@ class AnalyzeService {
             // 1. Pass the validated input to the AI engine boundary
             const aiResult = await AIEngine.analyze(inputMetadata);
             
-            // 2. FUTURE PIPELINE STEPS (Do NOT implement yet):
+            // 2. Validate the result returned by the AI engine
+            // If Hemanth's AI returns a malformed response, this will throw an error
+            // preventing bad data from reaching the frontend or downstream modules.
+            validatePhishForensicsResult(aiResult);
+            
+            // 3. FUTURE PIPELINE STEPS (Do NOT implement yet):
             // - Attack DNA Extraction (Yashu)
             // - Attack Reconstruction Pipeline (Yashu)
             // - Safe Simulation Setup (Monish)
             
-            // 3. Return the fully processed result back to the controller
+            // 4. Return the fully processed result back to the controller
             return aiResult;
             
         } catch (error) {

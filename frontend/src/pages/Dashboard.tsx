@@ -9,7 +9,7 @@ import './Dashboard.css';
 
 function getRiskClass(level?: string): string {
   const l = level?.toLowerCase();
-  if (l === 'high' || l === 'critical' || l === 'phishing' || l === 'malicious') return 'risk-high risk-critical';
+  if (l === 'high' || l === 'critical' || l === 'phishing' || l === 'malicious') return 'risk-high';
   if (l === 'medium' || l === 'suspicious') return 'risk-medium';
   if (l === 'low' || l === 'safe' || l === 'clean') return 'risk-low';
   return '';
@@ -41,9 +41,9 @@ function OriginalEvidence({ req }: { req?: AnalysisRequest }) {
   if (req.type === 'image') {
     return (
       <div>
-        <p className="data-label" style={{ marginBottom: 12 }}>Image Artifact</p>
-        <div className="evidence-image-wrap">
-          <img src={req.content} alt="Original submitted image evidence" />
+        <span className="data-label" style={{ marginBottom: '1rem' }}>Image Artifact</span>
+        <div style={{ padding: '1rem', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-warm-white)' }}>
+          <img src={req.content} alt="Original submitted image evidence" style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }} />
         </div>
       </div>
     );
@@ -51,9 +51,9 @@ function OriginalEvidence({ req }: { req?: AnalysisRequest }) {
 
   return (
     <div>
-      <p className="data-label" style={{ marginBottom: 8 }}>
+      <span className="data-label" style={{ marginBottom: '1rem' }}>
         {req.type === 'url' ? 'Target URL' : 'Email / Text Content'}
-      </p>
+      </span>
       <div className="evidence-panel">{req.content}</div>
     </div>
   );
@@ -130,14 +130,14 @@ export default function Dashboard() {
     return (
       <div className="container">
         <div className="dashboard-container">
-          <div className="card no-result-card">
+          <div className="no-result-card">
             <h2>No Investigation Loaded</h2>
             <p>
               Submit a suspicious artifact from the Analyze page to begin
               a forensic investigation.
             </p>
-            <button className="analyze-btn btn-arrow" onClick={() => navigate('/')}>
-              Start Investigation
+            <button className="btn-primary" onClick={() => navigate('/')}>
+              Start Investigation →
             </button>
           </div>
         </div>
@@ -155,8 +155,7 @@ export default function Dashboard() {
         <div className="dashboard-header">
           <div className="investigation-meta">
             <p className="investigation-id" aria-label="Investigation ID">
-              INVESTIGATION&ensp;/&ensp;{result.id}&ensp;·&ensp;
-              <span style={{ textTransform: 'capitalize' }}>{result.status}</span>
+              INVESTIGATION / {result.id} · <span style={{ textTransform: 'capitalize' }}>{result.status}</span>
             </p>
             <h1>Forensic Report</h1>
             <div className="verdict-row">
@@ -171,7 +170,7 @@ export default function Dashboard() {
             </div>
           </div>
           <button
-            className="back-btn"
+            className="btn-secondary"
             onClick={() => navigate('/')}
             aria-label="Start a new investigation"
           >
@@ -183,20 +182,16 @@ export default function Dashboard() {
         <div className="grid-2">
 
           {/* 01 — Original Evidence */}
-          <section aria-labelledby="s-evidence" className="card" style={{ animationDelay: '0.05s' }}>
-            <h2 id="s-evidence" className="card-title">
-              <span className="section-index">01</span>
-              Original Evidence
-            </h2>
+          <section aria-labelledby="s-evidence" className="editorial-section">
+            <span className="section-index">01</span>
+            <h2 id="s-evidence" className="card-title">Original Evidence</h2>
             <OriginalEvidence req={result.originalRequest} />
           </section>
 
           {/* 02 — Investigation Summary */}
-          <section aria-labelledby="s-summary" className="card" style={{ animationDelay: '0.1s' }}>
-            <h2 id="s-summary" className="card-title">
-              <span className="section-index">02</span>
-              Investigation Summary
-            </h2>
+          <section aria-labelledby="s-summary" className="editorial-section">
+            <span className="section-index">02</span>
+            <h2 id="s-summary" className="card-title">Investigation Summary</h2>
 
             {(result.riskScore !== undefined || result.riskLevel) && (
               <RiskDisplay riskScore={result.riskScore} riskLevel={result.riskLevel} />
@@ -237,18 +232,19 @@ export default function Dashboard() {
         </div>
 
         {/* ── GRID: ATTACK DNA + INDICATORS ─────────────────────── */}
-        <div className="grid-2" style={{ animationDelay: '0.15s' }}>
+        <div className="grid-2">
 
           {/* 03 — Threat Indicators */}
-          <section aria-labelledby="s-indicators" className="card">
-            <h2 id="s-indicators" className="card-title">
-              <span className="section-index">03</span>
-              Threat Indicators
-            </h2>
+          <section aria-labelledby="s-indicators" className="editorial-section">
+            <span className="section-index">03</span>
+            <h2 id="s-indicators" className="card-title">Threat Indicators</h2>
             {result.indicators && result.indicators.length > 0 ? (
-              <div className="indicator-list" aria-label="Detected threat indicators">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }} aria-label="Detected threat indicators">
                 {result.indicators.map((ind, idx) => (
-                  <span key={idx} className="indicator-tag">{ind}</span>
+                  <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                    <div style={{ width: '4px', height: '4px', backgroundColor: 'var(--danger)', borderRadius: '50%', marginTop: '8px' }}></div>
+                    <span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>{ind}</span>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -259,11 +255,9 @@ export default function Dashboard() {
           </section>
 
           {/* 04 — Attack DNA */}
-          <section aria-labelledby="s-dna" className="card">
-            <h2 id="s-dna" className="card-title">
-              <span className="section-index">04</span>
-              Attack DNA
-            </h2>
+          <section aria-labelledby="s-dna" className="editorial-section section-navy" style={{ borderRadius: '0' }}>
+            <span className="section-index" style={{ color: 'rgba(255,255,255,0.5)' }}>04</span>
+            <h2 id="s-dna" className="card-title" style={{ color: 'white' }}>Attack DNA</h2>
             <AttackDnaSection attackDna={result.attackDna} />
           </section>
         </div>
@@ -271,13 +265,10 @@ export default function Dashboard() {
         {/* ── 05 / TIMELINE ─────────────────────────────────────── */}
         <section
           aria-labelledby="s-timeline"
-          className="card"
-          style={{ animationDelay: '0.2s' }}
+          className="editorial-section"
         >
-          <h2 id="s-timeline" className="card-title">
-            <span className="section-index">05</span>
-            Attack Reconstruction Timeline
-          </h2>
+          <span className="section-index">05</span>
+          <h2 id="s-timeline" className="card-title">Attack Reconstruction Timeline</h2>
           {result.timeline && result.timeline.length > 0 ? (
             <div className="timeline" aria-label="Attack reconstruction timeline">
               {result.timeline.map((item, idx) => (
@@ -298,29 +289,26 @@ export default function Dashboard() {
         {/* ── 06 / SAFE SIMULATION ──────────────────────────────── */}
         <section
           aria-labelledby="s-simulation"
-          className="card simulation-card"
-          style={{ animationDelay: '0.25s' }}
+          className="editorial-section section-soft-blue"
         >
-          <h2 id="s-simulation" className="card-title simulation-title">
-            <span className="section-index">06</span>
-            Safe Simulation &amp; Interactive Attack Chain
-          </h2>
+          <span className="section-index">06</span>
+          <h2 id="s-simulation" className="card-title" style={{ color: 'var(--blue-primary)' }}>Safe Simulation &amp; Interactive Attack Chain</h2>
 
           {!result.simulation && (
-            <div className="empty-state">
+            <div className="empty-state" style={{ backgroundColor: 'white' }}>
               Attack reconstruction unavailable. Backend simulation data not present.
             </div>
           )}
           {result.simulation?.status === 'unavailable' && (
-            <div className="empty-state">Simulation endpoint is currently unavailable.</div>
+            <div className="empty-state" style={{ backgroundColor: 'white' }}>Simulation endpoint is currently unavailable.</div>
           )}
           {result.simulation?.status === 'failed' && (
-            <div className="empty-state" style={{ borderColor: 'rgba(244,63,94,0.25)', color: 'var(--red-400)' }}>
+            <div className="empty-state" style={{ border: '1px solid var(--danger)', color: 'var(--danger)', backgroundColor: '#FFF1F2' }}>
               Safe simulation failed to generate. No real attack was performed.
             </div>
           )}
           {result.simulation?.status === 'running' && (
-            <div className="empty-state" style={{ borderColor: 'rgba(34,211,238,0.25)', color: 'var(--cyan)' }}>
+            <div className="empty-state" style={{ border: '1px solid var(--blue-primary)', color: 'var(--blue-primary)', backgroundColor: 'rgba(37,99,235,0.05)' }}>
               Safe simulation is currently running…
             </div>
           )}
@@ -331,7 +319,7 @@ export default function Dashboard() {
                 SAFE SIMULATION — No real attack performed
               </div>
 
-              <div className="grid-2" style={{ marginBottom: 14 }}>
+              <div className="grid-2" style={{ marginBottom: '2rem' }}>
                 {result.simulation.attackerObjective && (
                   <div className="simulation-box">
                     <span className="box-label">Attacker Objective</span>
@@ -354,20 +342,29 @@ export default function Dashboard() {
               )}
 
               {stages.length > 0 && (
-                <div className="reconstruction-interactive" aria-label="Interactive attack chain navigator">
-                  <p className="section-subtitle">Attack Chain — {stages.length} stages</p>
+                <div style={{ border: '1px solid var(--border-strong)', padding: '2rem', backgroundColor: 'var(--bg-pure-white)' }} aria-label="Interactive attack chain navigator">
+                  <p className="data-label" style={{ marginBottom: '1.5rem' }}>Attack Chain — {stages.length} stages</p>
 
-                  <div className="stage-controls" role="tablist" aria-label="Attack chain stages">
+                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', overflowX: 'auto', paddingBottom: '0.5rem' }} role="tablist" aria-label="Attack chain stages">
                     {stages.map((stage, idx) => (
                       <button
                         key={stage.id || idx}
                         role="tab"
                         aria-selected={idx === activeStage}
                         aria-controls={`stage-${idx}`}
-                        className={`stage-btn ${idx === activeStage ? 'active' : ''}`}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          border: '1px solid var(--border-strong)',
+                          backgroundColor: idx === activeStage ? 'var(--text-primary)' : 'transparent',
+                          color: idx === activeStage ? 'white' : 'var(--text-primary)',
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
                         onClick={() => setActiveStage(idx)}
                       >
-                        {String(idx + 1).padStart(2, '0')}
+                        STAGE {String(idx + 1).padStart(2, '0')}
                       </button>
                     ))}
                   </div>
@@ -376,35 +373,37 @@ export default function Dashboard() {
                     id={`stage-${activeStage}`}
                     role="tabpanel"
                     aria-label={`Stage ${activeStage + 1}`}
-                    className="stage-details"
+                    style={{ backgroundColor: 'var(--bg-light)', padding: '2rem', border: '1px solid var(--border-light)', marginBottom: '2rem' }}
                   >
-                    <h3 className="stage-title">{stages[activeStage].title}</h3>
-                    <p className="stage-desc">{stages[activeStage].description}</p>
-                    <div className="stage-breakdown">
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{stages[activeStage].title}</h3>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>{stages[activeStage].description}</p>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid var(--border-strong)', paddingTop: '1.5rem' }}>
                       {stages[activeStage].attackerAction && (
-                        <div className="breakdown-item">
-                          <strong>Attacker Action</strong>
-                          {stages[activeStage].attackerAction}
+                        <div>
+                          <span className="data-label">Attacker Action</span>
+                          <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{stages[activeStage].attackerAction}</span>
                         </div>
                       )}
                       {stages[activeStage].victimInteraction && (
-                        <div className="breakdown-item">
-                          <strong>Victim Interaction</strong>
-                          {stages[activeStage].victimInteraction}
+                        <div>
+                          <span className="data-label">Victim Interaction</span>
+                          <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{stages[activeStage].victimInteraction}</span>
                         </div>
                       )}
                       {stages[activeStage].expectedConsequence && (
-                        <div className="breakdown-item warning-text">
-                          <strong>Expected Consequence</strong>
-                          {stages[activeStage].expectedConsequence}
+                        <div>
+                          <span className="data-label" style={{ color: 'var(--danger)' }}>Expected Consequence</span>
+                          <span style={{ fontSize: '0.95rem', color: 'var(--danger)' }}>{stages[activeStage].expectedConsequence}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="stage-nav">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
                     <button
-                      className="nav-btn"
+                      className="btn-secondary"
+                      style={{ opacity: activeStage === 0 ? 0.3 : 1, padding: '12px 24px' }}
                       disabled={activeStage === 0}
                       onClick={() => setActiveStage(Math.max(0, activeStage - 1))}
                       aria-label="Previous stage"
@@ -412,7 +411,8 @@ export default function Dashboard() {
                       ← Previous
                     </button>
                     <button
-                      className="nav-btn"
+                      className="btn-secondary"
+                      style={{ opacity: activeStage === stages.length - 1 ? 0.3 : 1, padding: '12px 24px' }}
                       disabled={activeStage === stages.length - 1}
                       onClick={() => setActiveStage(Math.min(stages.length - 1, activeStage + 1))}
                       aria-label="Next stage"
@@ -429,56 +429,54 @@ export default function Dashboard() {
         {/* ── 07 / EDUCATION ────────────────────────────────────── */}
         <section
           aria-labelledby="s-education"
-          className="card education-card"
-          style={{ animationDelay: '0.3s' }}
+          className="editorial-section"
         >
+          <span className="section-index">07</span>
           <h2
             id="s-education"
             className="card-title"
-            style={{ color: '#a855f7' }}
           >
-            <span className="section-index">07</span>
             Why This Matters
           </h2>
 
           {result.explanation && (
-            <div style={{ marginBottom: result.educationalLesson ? 20 : 0 }}>
-              <p className="section-subtitle">Forensic Explanation</p>
-              <p className="explanation-text">{result.explanation}</p>
+            <div style={{ marginBottom: result.educationalLesson ? '2rem' : 0 }}>
+              <span className="data-label" style={{ marginBottom: '1rem' }}>Forensic Explanation</span>
+              <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{result.explanation}</p>
             </div>
           )}
 
           {result.educationalLesson && (
-            <div style={{ marginBottom: result.forensicTakeaways ? 20 : 0 }}>
-              <p className="section-subtitle">Security Lesson</p>
+            <div style={{ marginBottom: result.forensicTakeaways ? '2rem' : 0 }}>
+              <span className="data-label" style={{ marginBottom: '1rem' }}>Security Lesson</span>
               <div className="lesson-panel">{result.educationalLesson}</div>
             </div>
           )}
 
           {result.forensicTakeaways && (
             <div>
-              <p className="section-subtitle">Key Takeaways</p>
-              <div className="grid-3">
+              <span className="data-label" style={{ marginBottom: '1rem' }}>Key Takeaways</span>
+              <div className="grid-2">
                 {result.forensicTakeaways.tactic && (
                   <div className="takeaway-item">
-                    <p className="data-label" style={{ marginBottom: 6 }}>Attacker Tactic</p>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--text-1)', lineHeight: 1.5 }}>
+                    <span className="data-label" style={{ marginBottom: '0.5rem' }}>Attacker Tactic</span>
+                    <p style={{ fontSize: '1rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
                       {result.forensicTakeaways.tactic}
                     </p>
                   </div>
                 )}
                 {result.forensicTakeaways.manipulation && (
                   <div className="takeaway-item">
-                    <p className="data-label" style={{ marginBottom: 6 }}>Manipulation Technique</p>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--text-1)', lineHeight: 1.5 }}>
+                    <span className="data-label" style={{ marginBottom: '0.5rem' }}>Manipulation Technique</span>
+                    <p style={{ fontSize: '1rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
                       {result.forensicTakeaways.manipulation}
                     </p>
                   </div>
                 )}
                 {result.forensicTakeaways.target && (
                   <div className="takeaway-item">
-                    <p className="data-label" style={{ marginBottom: 6 }}>Targeted Information</p>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--text-1)', lineHeight: 1.5 }}>
+                    <span className="data-label" style={{ marginBottom: '0.5rem' }}>Targeted Information</span>
+                    <p style={{ fontSize: '1rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
                       {result.forensicTakeaways.target}
                     </p>
                   </div>
@@ -495,15 +493,13 @@ export default function Dashboard() {
         {/* ── 08 / RECOMMENDATIONS ──────────────────────────────── */}
         <section
           aria-labelledby="s-rec"
-          className="card recommendations-card"
-          style={{ animationDelay: '0.35s' }}
+          className="editorial-section"
         >
+          <span className="section-index">08</span>
           <h2
             id="s-rec"
             className="card-title"
-            style={{ color: 'var(--green-400)' }}
           >
-            <span className="section-index">08</span>
             Defensive Recommendations
           </h2>
           {result.recommendations && result.recommendations.length > 0 ? (
@@ -523,13 +519,13 @@ export default function Dashboard() {
         </section>
 
         {/* ── FINAL ACTIONS ─────────────────────────────────────── */}
-        <div className="dashboard-actions" style={{ animationDelay: '0.4s' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem 0' }}>
           <button
-            className="analyze-btn btn-arrow"
+            className="btn-primary"
             onClick={() => navigate('/')}
             aria-label="Start a new forensic investigation"
           >
-            Analyze Another Artifact
+            ANALYZE ANOTHER ARTIFACT →
           </button>
         </div>
 

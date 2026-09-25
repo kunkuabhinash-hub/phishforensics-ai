@@ -4,9 +4,9 @@ import type { AnalysisRequest, AnalysisResponse } from '../types';
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 export const apiService = {
-  async submitAnalysis(request: AnalysisRequest): Promise<AnalysisResponse> {
+  async submitAnalysis(request: AnalysisRequest): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/analyze`, {
+      const response = await fetch(`${API_BASE_URL}/analyze/unified`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

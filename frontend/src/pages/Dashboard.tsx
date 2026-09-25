@@ -1,534 +1,472 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import type { AnalysisResponse, AnalysisRequest } from '../types';
+import type { AnalysisRequest } from '../types';
 import './Dashboard.css';
-
-/* ─────────────────────────────────────────────────────────────────
-   HELPERS
-   ───────────────────────────────────────────────────────────────── */
-
-function getRiskClass(level?: string): string {
-  const l = level?.toLowerCase();
-  if (l === 'high' || l === 'critical' || l === 'phishing' || l === 'malicious') return 'risk-high';
-  if (l === 'medium' || l === 'suspicious') return 'risk-medium';
-  if (l === 'low' || l === 'safe' || l === 'clean') return 'risk-low';
-  return '';
-}
-
-function getRiskBadgeClass(level?: string): string {
-  const l = level?.toLowerCase();
-  if (l === 'high' || l === 'critical' || l === 'phishing' || l === 'malicious') return 'badge badge-red';
-  if (l === 'medium' || l === 'suspicious') return 'badge badge-amber';
-  if (l === 'low' || l === 'safe' || l === 'clean') return 'badge badge-green';
-  return 'badge badge-muted';
-}
-
-function getDnaLevel(score: number): string {
-  if (score >= 70) return 'high';
-  if (score >= 40) return 'medium';
-  return '';
-}
-
-/* ─────────────────────────────────────────────────────────────────
-   SUB-COMPONENTS
-   ───────────────────────────────────────────────────────────────── */
-
-function OriginalEvidence({ req }: { req?: AnalysisRequest }) {
-  if (!req) {
-    return <div className="empty-state">No original evidence attached to this investigation.</div>;
-  }
-
-  if (req.type === 'image') {
-    return (
-      <div>
-        <span className="data-label" style={{ marginBottom: '1rem' }}>Image Artifact</span>
-        <div style={{ padding: '1rem', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-warm-white)' }}>
-          <img src={req.content} alt="Original submitted image evidence" style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }} />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <span className="data-label" style={{ marginBottom: '1rem' }}>
-        {req.type === 'url' ? 'Target URL' : 'Email / Text Content'}
-      </span>
-      <div className="evidence-panel">{req.content}</div>
-    </div>
-  );
-}
-
-function AttackDnaSection({ attackDna }: { attackDna?: Record<string, number> }) {
-  if (!attackDna || Object.keys(attackDna).length === 0) {
-    return (
-      <div className="empty-state">
-        Attack DNA unavailable — no dimensional data returned by the analysis engine.
-      </div>
-    );
-  }
-  return (
-    <>
-      {Object.entries(attackDna).map(([dimension, score]) => (
-        <div key={dimension} className="dna-bar-container">
-          <div className="dna-label-row">
-            <span className="dna-label-name">{dimension.replace(/([A-Z])/g, ' $1').trim()}</span>
-            <span className="dna-label-score">{score}%</span>
-          </div>
-          <div
-            className="dna-bar-bg"
-            role="progressbar"
-            aria-valuenow={score}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={`${dimension}: ${score}%`}
-          >
-            <div
-              className="dna-bar-fill"
-              data-level={getDnaLevel(score)}
-              style={{ width: `${score}%` }}
-            />
-          </div>
-        </div>
-      ))}
-    </>
-  );
-}
-
-function RiskDisplay({ riskScore, riskLevel }: { riskScore?: number; riskLevel?: string }) {
-  const cls = getRiskClass(riskLevel);
-  const display = riskScore !== undefined ? String(riskScore) : '—';
-  return (
-    <div className="risk-display">
-      <div className={`risk-score-circle ${cls}`} aria-label={`Risk score ${display} out of 100`}>
-        <span className={`risk-score-num ${cls}`}>{display}</span>
-        <span className="risk-score-sub">/100</span>
-      </div>
-      {riskLevel && (
-        <div className="risk-details">
-          <p className="risk-level-label">Threat Level</p>
-          <p className={`risk-level-value ${cls}`}>{riskLevel.toUpperCase()}</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────
-   MAIN DASHBOARD
-   ───────────────────────────────────────────────────────────────── */
 
 export default function Dashboard() {
   const location = useLocation();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const [activeStage, setActiveStage] = useState<number>(0);
+  
+  const result: any = location.state?.analysisResult;
 
-  const result: AnalysisResponse | undefined = location.state?.analysisResult;
-
-  /* ── No result state ── */
   if (!result) {
     return (
-      <div className="container">
-        <div className="dashboard-container">
-          <div className="no-result-card">
-            <h2>No Investigation Loaded</h2>
-            <p>
-              Submit a suspicious artifact from the Analyze page to begin
-              a forensic investigation.
-            </p>
-            <button className="btn-primary" onClick={() => navigate('/')}>
-              Start Investigation →
-            </button>
-          </div>
+      <div className="dashboard-container">
+        <div className="card">
+          <h2>No Analysis Result Found</h2>
+          <p>Please submit an artifact for investigation first.</p>
+          <button className="back-btn" onClick={() => navigate('/')}>
+            Start Investigation
+          </button>
         </div>
       </div>
     );
   }
 
-  const stages = result.simulation?.stages ?? [];
+  // Unified contract extraction with graceful legacy fallbacks
+  const threatAssessment = result.threatAssessment || {
+    verdict: result.riskLevel || 'unknown',
+    severity: result.riskLevel || 'unknown',
+    riskScore: result.riskScore !== undefined ? result.riskScore : null,
+    confidence: 0,
+    justification: result.explanation || ''
+  };
+
+  const attackerIntent = result.attackerIntent || {
+    primaryGoal: result.intent || 'Unknown',
+    description: '',
+    potentialImpact: null
+  };
+
+  const evidenceItems: any[] = result.evidence || (result.indicators || []).map((ind: string, idx: number) => ({
+    id: `IND-${idx + 1}`,
+    category: 'technical',
+    value: ind,
+    description: ind
+  }));
+
+  const attackDNA = result.attackDNA || null;
+  const reconstruction = result.reconstruction || null;
+  const safeSimulation = result.safeSimulation || result.simulation || null;
+  const safetyGuidance = result.safetyGuidance || null;
+  const mitreAttack = result.mitreAttack || null;
+
+  const getRiskColor = (level?: string) => {
+    const l = level?.toLowerCase();
+    if (l === 'high' || l === 'critical') return 'risk-high';
+    if (l === 'medium') return 'risk-medium';
+    if (l === 'low') return 'risk-low';
+    return '';
+  };
+
+  const getMitreStatusColor = (status?: string) => {
+    if (status === 'mapped') return '#10b981';
+    if (status === 'partial') return '#f59e0b';
+    return '#94a3b8';
+  };
+
+  const renderOriginalEvidence = (req?: AnalysisRequest) => {
+    if (!req) return <div className="empty-state">No original evidence available</div>;
+    
+    if (req.type === 'image') {
+      return (
+        <div>
+          <span className="data-label">Image Artifact:</span>
+          <img src={req.content} alt="Original Evidence" style={{ maxWidth: '100%', maxHeight: '300px', marginTop: '10px' }} />
+        </div>
+      );
+    }
+    
+    return (
+      <div>
+        <span className="data-label">{req.type === 'url' ? 'Analyzed URL:' : 'Analyzed Text:'}</span>
+        <div className="evidence-panel">{req.content}</div>
+      </div>
+    );
+  };
+
+  const reconstructionStages: any[] = reconstruction?.stages || safeSimulation?.stages || [];
 
   return (
-    <div className="container">
-      <div className="dashboard-container" aria-label="Forensic investigation results">
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <div>
+          <h1>Forensic Investigation Results</h1>
+          {result.analysisId && (
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              Analysis ID: {result.analysisId}
+            </span>
+          )}
+        </div>
+        <button className="back-btn" onClick={() => navigate('/')}>
+          New Investigation
+        </button>
+      </div>
 
-        {/* ── HEADER ────────────────────────────────────────────── */}
-        <div className="dashboard-header">
-          <div className="investigation-meta">
-            <p className="investigation-id" aria-label="Investigation ID">
-              INVESTIGATION / {result.id} · <span style={{ textTransform: 'capitalize' }}>{result.status}</span>
-            </p>
-            <h1>Forensic Report</h1>
-            <div className="verdict-row">
-              {result.riskLevel && (
-                <span className={getRiskBadgeClass(result.riskLevel)} role="status">
-                  {result.riskLevel.toUpperCase()}
-                </span>
-              )}
-              {result.intent && (
-                <span className="badge badge-muted">{result.intent}</span>
-              )}
-            </div>
+      {/* 1. ORIGINAL EVIDENCE */}
+      <div className="card">
+        <h2 className="card-title">01 / Original Evidence</h2>
+        {renderOriginalEvidence(result.originalRequest || result.input)}
+      </div>
+
+      {/* 2. THREAT ASSESSMENT & ATTACKER INTENT */}
+      <div className="grid-2">
+        <div className="card">
+          <h2 className="card-title">02 / Threat Assessment</h2>
+          <div className="data-row">
+            <span className="data-label">Verdict</span>
+            <span className={`data-value ${getRiskColor(threatAssessment.verdict)}`} style={{ textTransform: 'capitalize' }}>
+              {threatAssessment.verdict}
+            </span>
           </div>
-          <button
-            className="btn-secondary"
-            onClick={() => navigate('/')}
-            aria-label="Start a new investigation"
-          >
-            ← New Investigation
-          </button>
+          <div className="data-row">
+            <span className="data-label">Severity</span>
+            <span className={`data-value ${getRiskColor(threatAssessment.severity)}`} style={{ textTransform: 'capitalize' }}>
+              {threatAssessment.severity}
+            </span>
+          </div>
+          <div className="data-row">
+            <span className="data-label">Risk Score</span>
+            <span className="data-value">
+              {threatAssessment.riskScore !== null ? `${threatAssessment.riskScore} / 100` : 'Inconclusive / N/A'}
+            </span>
+          </div>
+          <div className="data-row">
+            <span className="data-label">Confidence</span>
+            <span className="data-value">{threatAssessment.confidence}%</span>
+          </div>
+          {threatAssessment.justification && (
+            <div style={{ marginTop: '0.75rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+              <strong>Justification:</strong> {threatAssessment.justification}
+            </div>
+          )}
         </div>
 
-        {/* ── GRID: EVIDENCE + SUMMARY ──────────────────────────── */}
-        <div className="grid-2">
-
-          {/* 01 — Original Evidence */}
-          <section aria-labelledby="s-evidence" className="editorial-section">
-            <span className="section-index">01</span>
-            <h2 id="s-evidence" className="card-title">Original Evidence</h2>
-            <OriginalEvidence req={result.originalRequest} />
-          </section>
-
-          {/* 02 — Investigation Summary */}
-          <section aria-labelledby="s-summary" className="editorial-section">
-            <span className="section-index">02</span>
-            <h2 id="s-summary" className="card-title">Investigation Summary</h2>
-
-            {(result.riskScore !== undefined || result.riskLevel) && (
-              <RiskDisplay riskScore={result.riskScore} riskLevel={result.riskLevel} />
-            )}
-
+        <div className="card">
+          <h2 className="card-title">Attacker Intent</h2>
+          <div className="data-row">
+            <span className="data-label">Primary Goal</span>
+            <span className="data-value">{attackerIntent.primaryGoal}</span>
+          </div>
+          {attackerIntent.description && (
             <div className="data-row">
-              <span className="data-label">Status</span>
-              <span className="data-value" style={{ textTransform: 'capitalize' }}>
-                {result.status}
-              </span>
+              <span className="data-label">Action Target</span>
+              <span className="data-value">{attackerIntent.description}</span>
             </div>
-
-            {result.riskScore !== undefined && (
-              <div className="data-row">
-                <span className="data-label">Risk Score</span>
-                <span className={`data-value ${getRiskClass(result.riskLevel)}`}>
-                  {result.riskScore} / 100
-                </span>
-              </div>
-            )}
-
-            {result.riskLevel && (
-              <div className="data-row">
-                <span className="data-label">Risk Level</span>
-                <span className={`data-value ${getRiskClass(result.riskLevel)}`}>
-                  {result.riskLevel.toUpperCase()}
-                </span>
-              </div>
-            )}
-
-            {result.intent && (
-              <div className="data-row">
-                <span className="data-label">Detected Intent</span>
-                <span className="data-value">{result.intent}</span>
-              </div>
-            )}
-          </section>
+          )}
+          {attackerIntent.potentialImpact && (
+            <div className="data-row">
+              <span className="data-label">Potential Impact</span>
+              <span className="data-value" style={{ color: '#ef4444' }}>{attackerIntent.potentialImpact}</span>
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* ── GRID: ATTACK DNA + INDICATORS ─────────────────────── */}
-        <div className="grid-2">
-
-          {/* 03 — Threat Indicators */}
-          <section aria-labelledby="s-indicators" className="editorial-section">
-            <span className="section-index">03</span>
-            <h2 id="s-indicators" className="card-title">Threat Indicators</h2>
-            {result.indicators && result.indicators.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }} aria-label="Detected threat indicators">
-                {result.indicators.map((ind, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-                    <div style={{ width: '4px', height: '4px', backgroundColor: 'var(--danger)', borderRadius: '50%', marginTop: '8px' }}></div>
-                    <span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>{ind}</span>
-                  </div>
-                ))}
+      {/* 3. FORENSIC EVIDENCE */}
+      <div className="card">
+        <h2 className="card-title">03 / Forensic Evidence & Indicators</h2>
+        {evidenceItems.length > 0 ? (
+          <div className="indicator-list" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {evidenceItems.map((ev, idx) => (
+              <div key={ev.id || idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255,255,255,0.03)', padding: '0.5rem 0.75rem', borderRadius: '4px' }}>
+                <span className="indicator-tag" style={{ textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                  {ev.category || 'indicator'}
+                </span>
+                <span style={{ fontWeight: 600, color: '#38bdf8' }}>{ev.defangedValue || ev.value}</span>
+                {ev.description && ev.description !== ev.value && (
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>— {ev.description}</span>
+                )}
               </div>
-            ) : (
-              <div className="empty-state">
-                No specific threat indicators returned by the analysis engine.
-              </div>
-            )}
-          </section>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">No specific forensic indicators returned by analysis engine</div>
+        )}
+      </div>
 
-          {/* 04 — Attack DNA */}
-          <section aria-labelledby="s-dna" className="editorial-section section-navy" style={{ borderRadius: '0' }}>
-            <span className="section-index" style={{ color: 'rgba(255,255,255,0.5)' }}>04</span>
-            <h2 id="s-dna" className="card-title" style={{ color: 'white' }}>Attack DNA</h2>
-            <AttackDnaSection attackDna={result.attackDna} />
-          </section>
-        </div>
-
-        {/* ── 05 / TIMELINE ─────────────────────────────────────── */}
-        <section
-          aria-labelledby="s-timeline"
-          className="editorial-section"
-        >
-          <span className="section-index">05</span>
-          <h2 id="s-timeline" className="card-title">Attack Reconstruction Timeline</h2>
-          {result.timeline && result.timeline.length > 0 ? (
-            <div className="timeline" aria-label="Attack reconstruction timeline">
-              {result.timeline.map((item, idx) => (
-                <div key={idx} className="timeline-item">
-                  <div className="timeline-dot" aria-hidden="true" />
-                  <p className="timeline-stage">{item.stage}</p>
-                  <p className="timeline-desc">{item.description}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="empty-state">
-              Attack sequence not established — insufficient forensic data returned.
-            </div>
-          )}
-        </section>
-
-        {/* ── 06 / SAFE SIMULATION ──────────────────────────────── */}
-        <section
-          aria-labelledby="s-simulation"
-          className="editorial-section section-soft-blue"
-        >
-          <span className="section-index">06</span>
-          <h2 id="s-simulation" className="card-title" style={{ color: 'var(--blue-primary)' }}>Safe Simulation &amp; Interactive Attack Chain</h2>
-
-          {!result.simulation && (
-            <div className="empty-state" style={{ backgroundColor: 'white' }}>
-              Attack reconstruction unavailable. Backend simulation data not present.
-            </div>
-          )}
-          {result.simulation?.status === 'unavailable' && (
-            <div className="empty-state" style={{ backgroundColor: 'white' }}>Simulation endpoint is currently unavailable.</div>
-          )}
-          {result.simulation?.status === 'failed' && (
-            <div className="empty-state" style={{ border: '1px solid var(--danger)', color: 'var(--danger)', backgroundColor: '#FFF1F2' }}>
-              Safe simulation failed to generate. No real attack was performed.
-            </div>
-          )}
-          {result.simulation?.status === 'running' && (
-            <div className="empty-state" style={{ border: '1px solid var(--blue-primary)', color: 'var(--blue-primary)', backgroundColor: 'rgba(37,99,235,0.05)' }}>
-              Safe simulation is currently running…
-            </div>
-          )}
-
-          {result.simulation && (result.simulation.status === 'completed' || result.simulation.status === 'ready') && (
+      {/* 4. ATTACK DNA & ATTACK RECONSTRUCTION */}
+      <div className="grid-2">
+        <div className="card">
+          <h2 className="card-title">04 / Attack DNA</h2>
+          {attackDNA ? (
             <div>
-              <div className="simulation-header-badge">
-                SAFE SIMULATION — No real attack performed
+              <p style={{ fontStyle: 'italic', marginBottom: '1rem', color: '#cbd5e1' }}>
+                {attackDNA.profileSummary}
+              </p>
+              <div className="data-row">
+                <span className="data-label">Complexity</span>
+                <span className="data-value" style={{ textTransform: 'capitalize' }}>{attackDNA.complexity}</span>
               </div>
-
-              <div className="grid-2" style={{ marginBottom: '2rem' }}>
-                {result.simulation.attackerObjective && (
-                  <div className="simulation-box">
-                    <span className="box-label">Attacker Objective</span>
-                    <div className="box-value">{result.simulation.attackerObjective}</div>
-                  </div>
-                )}
-                {result.simulation.victimAction && (
-                  <div className="simulation-box">
-                    <span className="box-label">Targeted Victim Action</span>
-                    <div className="box-value">{result.simulation.victimAction}</div>
-                  </div>
-                )}
+              <div className="data-row">
+                <span className="data-label">Delivery Vector</span>
+                <span className="data-value">{attackDNA.deliveryVector}</span>
               </div>
-
-              {result.simulation.consequencePreview && (
-                <div className="consequence-panel">
-                  <span className="box-label">Expected Consequence (Safe Preview)</span>
-                  <p>{result.simulation.consequencePreview}</p>
-                </div>
-              )}
-
-              {stages.length > 0 && (
-                <div style={{ border: '1px solid var(--border-strong)', padding: '2rem', backgroundColor: 'var(--bg-pure-white)' }} aria-label="Interactive attack chain navigator">
-                  <p className="data-label" style={{ marginBottom: '1.5rem' }}>Attack Chain — {stages.length} stages</p>
-
-                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', overflowX: 'auto', paddingBottom: '0.5rem' }} role="tablist" aria-label="Attack chain stages">
-                    {stages.map((stage, idx) => (
-                      <button
-                        key={stage.id || idx}
-                        role="tab"
-                        aria-selected={idx === activeStage}
-                        aria-controls={`stage-${idx}`}
-                        style={{
-                          padding: '0.5rem 1rem',
-                          border: '1px solid var(--border-strong)',
-                          backgroundColor: idx === activeStage ? 'var(--text-primary)' : 'transparent',
-                          color: idx === activeStage ? 'white' : 'var(--text-primary)',
-                          fontFamily: 'var(--font-mono)',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          cursor: 'pointer'
-                        }}
-                        onClick={() => setActiveStage(idx)}
-                      >
-                        STAGE {String(idx + 1).padStart(2, '0')}
-                      </button>
+              {attackDNA.traits && attackDNA.traits.length > 0 && (
+                <div style={{ marginTop: '1rem' }}>
+                  <span className="data-label" style={{ display: 'block', marginBottom: '0.5rem' }}>Observed Traits:</span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    {attackDNA.traits.map((tr: any) => (
+                      <span key={tr.key} className="indicator-tag" style={{ background: tr.present ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255,255,255,0.05)' }}>
+                        {tr.label || tr.key} {tr.intensity ? `(${tr.intensity})` : ''}
+                      </span>
                     ))}
                   </div>
-
-                  <div
-                    id={`stage-${activeStage}`}
-                    role="tabpanel"
-                    aria-label={`Stage ${activeStage + 1}`}
-                    style={{ backgroundColor: 'var(--bg-light)', padding: '2rem', border: '1px solid var(--border-light)', marginBottom: '2rem' }}
-                  >
-                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{stages[activeStage].title}</h3>
-                    <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>{stages[activeStage].description}</p>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid var(--border-strong)', paddingTop: '1.5rem' }}>
-                      {stages[activeStage].attackerAction && (
-                        <div>
-                          <span className="data-label">Attacker Action</span>
-                          <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{stages[activeStage].attackerAction}</span>
-                        </div>
-                      )}
-                      {stages[activeStage].victimInteraction && (
-                        <div>
-                          <span className="data-label">Victim Interaction</span>
-                          <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{stages[activeStage].victimInteraction}</span>
-                        </div>
-                      )}
-                      {stages[activeStage].expectedConsequence && (
-                        <div>
-                          <span className="data-label" style={{ color: 'var(--danger)' }}>Expected Consequence</span>
-                          <span style={{ fontSize: '0.95rem', color: 'var(--danger)' }}>{stages[activeStage].expectedConsequence}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-                    <button
-                      className="btn-secondary"
-                      style={{ opacity: activeStage === 0 ? 0.3 : 1, padding: '12px 24px' }}
-                      disabled={activeStage === 0}
-                      onClick={() => setActiveStage(Math.max(0, activeStage - 1))}
-                      aria-label="Previous stage"
-                    >
-                      ← Previous
-                    </button>
-                    <button
-                      className="btn-secondary"
-                      style={{ opacity: activeStage === stages.length - 1 ? 0.3 : 1, padding: '12px 24px' }}
-                      disabled={activeStage === stages.length - 1}
-                      onClick={() => setActiveStage(Math.min(stages.length - 1, activeStage + 1))}
-                      aria-label="Next stage"
-                    >
-                      Next →
-                    </button>
-                  </div>
                 </div>
               )}
             </div>
-          )}
-        </section>
-
-        {/* ── 07 / EDUCATION ────────────────────────────────────── */}
-        <section
-          aria-labelledby="s-education"
-          className="editorial-section"
-        >
-          <span className="section-index">07</span>
-          <h2
-            id="s-education"
-            className="card-title"
-          >
-            Why This Matters
-          </h2>
-
-          {result.explanation && (
-            <div style={{ marginBottom: result.educationalLesson ? '2rem' : 0 }}>
-              <span className="data-label" style={{ marginBottom: '1rem' }}>Forensic Explanation</span>
-              <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{result.explanation}</p>
-            </div>
-          )}
-
-          {result.educationalLesson && (
-            <div style={{ marginBottom: result.forensicTakeaways ? '2rem' : 0 }}>
-              <span className="data-label" style={{ marginBottom: '1rem' }}>Security Lesson</span>
-              <div className="lesson-panel">{result.educationalLesson}</div>
-            </div>
-          )}
-
-          {result.forensicTakeaways && (
-            <div>
-              <span className="data-label" style={{ marginBottom: '1rem' }}>Key Takeaways</span>
-              <div className="grid-2">
-                {result.forensicTakeaways.tactic && (
-                  <div className="takeaway-item">
-                    <span className="data-label" style={{ marginBottom: '0.5rem' }}>Attacker Tactic</span>
-                    <p style={{ fontSize: '1rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                      {result.forensicTakeaways.tactic}
-                    </p>
-                  </div>
-                )}
-                {result.forensicTakeaways.manipulation && (
-                  <div className="takeaway-item">
-                    <span className="data-label" style={{ marginBottom: '0.5rem' }}>Manipulation Technique</span>
-                    <p style={{ fontSize: '1rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                      {result.forensicTakeaways.manipulation}
-                    </p>
-                  </div>
-                )}
-                {result.forensicTakeaways.target && (
-                  <div className="takeaway-item">
-                    <span className="data-label" style={{ marginBottom: '0.5rem' }}>Targeted Information</span>
-                    <p style={{ fontSize: '1rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                      {result.forensicTakeaways.target}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {!result.explanation && !result.educationalLesson && !result.forensicTakeaways && (
-            <div className="empty-state">No educational content available for this analysis.</div>
-          )}
-        </section>
-
-        {/* ── 08 / RECOMMENDATIONS ──────────────────────────────── */}
-        <section
-          aria-labelledby="s-rec"
-          className="editorial-section"
-        >
-          <span className="section-index">08</span>
-          <h2
-            id="s-rec"
-            className="card-title"
-          >
-            Defensive Recommendations
-          </h2>
-          {result.recommendations && result.recommendations.length > 0 ? (
-            <ul className="recommendations-list" aria-label="Security recommendations">
-              {result.recommendations.map((rec, idx) => (
-                <li key={idx} className="recommendation-item">
-                  <span className="check-icon" aria-hidden="true">✓</span>
-                  <span>{rec}</span>
-                </li>
-              ))}
-            </ul>
           ) : (
-            <div className="empty-state">
-              No recommendations provided by the analysis engine.
-            </div>
+            <div className="empty-state">Attack DNA profile not established</div>
           )}
-        </section>
-
-        {/* ── FINAL ACTIONS ─────────────────────────────────────── */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem 0' }}>
-          <button
-            className="btn-primary"
-            onClick={() => navigate('/')}
-            aria-label="Start a new forensic investigation"
-          >
-            ANALYZE ANOTHER ARTIFACT →
-          </button>
         </div>
 
+        <div className="card">
+          <h2 className="card-title">05 / Attack Reconstruction</h2>
+          {reconstruction ? (
+            <div>
+              {reconstruction.attackFlowSummary && (
+                <p style={{ color: '#cbd5e1', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                  {reconstruction.attackFlowSummary}
+                </p>
+              )}
+              {reconstructionStages.length > 0 ? (
+                <div className="timeline">
+                  {reconstructionStages.map((stg: any, idx: number) => (
+                    <div key={stg.stageId || idx} className="timeline-item">
+                      <div className="timeline-dot"></div>
+                      <div className="timeline-stage">{stg.stageTitle || stg.stage || `Stage ${idx + 1}`}</div>
+                      <div className="timeline-desc">{stg.stageDescription || stg.description}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">Reconstruction sequence not established</div>
+              )}
+            </div>
+          ) : (
+            <div className="empty-state">Attack reconstruction not available</div>
+          )}
+        </div>
+      </div>
+
+      {/* 5. SAFE SIMULATION */}
+      <div className="card simulation-card">
+        <h2 className="card-title simulation-title">
+          06 / Safe Simulation & Interactive Attack Chain
+        </h2>
+        
+        {!safeSimulation ? (
+          <div className="empty-state">Simulation data unavailable.</div>
+        ) : (
+          <div className="simulation-content">
+            {safeSimulation.scenarioOverview && (
+              <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                {safeSimulation.scenarioOverview}
+              </p>
+            )}
+
+            {reconstructionStages.length > 0 && (
+              <div className="reconstruction-interactive">
+                <h3 className="section-subtitle">Simulated Attack Progression</h3>
+                <div className="stage-controls">
+                  {reconstructionStages.map((stage: any, idx: number) => (
+                    <button
+                      key={stage.stageId || stage.id || idx}
+                      className={`stage-btn ${idx === activeStage ? 'active' : ''}`}
+                      onClick={() => setActiveStage(idx)}
+                    >
+                      Stage {idx + 1}
+                    </button>
+                  ))}
+                </div>
+                
+                {reconstructionStages[activeStage] && (
+                  <div className="stage-details">
+                    <h4 className="stage-title">
+                      {reconstructionStages[activeStage].stageTitle || reconstructionStages[activeStage].title || `Stage ${activeStage + 1}`}
+                    </h4>
+                    <p className="stage-desc">
+                      {reconstructionStages[activeStage].stageDescription || reconstructionStages[activeStage].description}
+                    </p>
+                    {reconstructionStages[activeStage].mechanism && (
+                      <div className="breakdown-item" style={{ marginTop: '0.5rem' }}>
+                        <strong>Mechanism:</strong> {reconstructionStages[activeStage].mechanism}
+                      </div>
+                    )}
+                    {reconstructionStages[activeStage].possibleConsequence && (
+                      <div className="breakdown-item warning-text" style={{ marginTop: '0.5rem' }}>
+                        <strong>Hypothetical Consequence:</strong> {reconstructionStages[activeStage].possibleConsequence.detailedConsequence || reconstructionStages[activeStage].possibleConsequence.shortImpact}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <div className="stage-nav">
+                  <button 
+                    disabled={activeStage === 0} 
+                    onClick={() => setActiveStage(Math.max(0, activeStage - 1))}
+                    className="nav-btn"
+                  >
+                    ← Previous Stage
+                  </button>
+                  <button 
+                    disabled={activeStage === reconstructionStages.length - 1} 
+                    onClick={() => setActiveStage(Math.min(reconstructionStages.length - 1, activeStage + 1))}
+                    className="nav-btn"
+                  >
+                    Next Stage →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {safeSimulation.safetyDisclaimer && (
+              <div style={{ marginTop: '1rem', fontStyle: 'italic', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                ℹ {safeSimulation.safetyDisclaimer}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 6. MITRE ATT&CK ENTERPRISE MAPPING */}
+      <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+          <h2 className="card-title" style={{ borderBottom: 'none', margin: 0 }}>
+            07 / MITRE ATT&CK® Enterprise Mapping
+          </h2>
+          {mitreAttack && (
+            <span style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: `1px solid ${getMitreStatusColor(mitreAttack.status)}`,
+              color: getMitreStatusColor(mitreAttack.status),
+              padding: '0.2rem 0.6rem',
+              borderRadius: '12px',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              textTransform: 'uppercase'
+            }}>
+              Status: {mitreAttack.status}
+            </span>
+          )}
+        </div>
+
+        {!mitreAttack ? (
+          <div className="empty-state">MITRE ATT&CK mapping not generated for this artifact.</div>
+        ) : mitreAttack.status === 'unmapped' ? (
+          <div>
+            <div className="empty-state">No verified MITRE ATT&CK techniques matched the provided evidence.</div>
+            {mitreAttack.uncertaintyNotes && mitreAttack.uncertaintyNotes.length > 0 && (
+              <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '4px', borderLeft: '3px solid #94a3b8' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  {mitreAttack.uncertaintyNotes.join(' ')}
+                </span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div>
+            {/* Primary Technique Card */}
+            {mitreAttack.primaryTechnique && (
+              <div style={{ background: 'rgba(56, 189, 248, 0.05)', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '6px', padding: '1rem', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <div>
+                    <span style={{ fontSize: '0.8rem', color: '#38bdf8', fontWeight: 600, textTransform: 'uppercase' }}>
+                      Primary Entry Technique
+                    </span>
+                    <h3 style={{ margin: '0.25rem 0', color: '#f8fafc' }}>
+                      {mitreAttack.primaryTechnique.techniqueId} — {mitreAttack.primaryTechnique.techniqueName}
+                      {mitreAttack.primaryTechnique.subTechniqueId && (
+                        <span style={{ color: '#94a3b8', fontSize: '0.9rem', marginLeft: '0.5rem' }}>
+                          ({mitreAttack.primaryTechnique.subTechniqueId} {mitreAttack.primaryTechnique.subTechniqueName})
+                        </span>
+                      )}
+                    </h3>
+                  </div>
+                  <span style={{ fontSize: '0.85rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                    Tactic: {mitreAttack.primaryTechnique.tactic?.name || 'Initial Access'} ({mitreAttack.primaryTechnique.tactic?.id})
+                  </span>
+                </div>
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: '#cbd5e1' }}>
+                  {mitreAttack.primaryTechnique.mappingRationale}
+                </p>
+              </div>
+            )}
+
+            {/* Observed Tactics */}
+            {mitreAttack.observedTactics && mitreAttack.observedTactics.length > 0 && (
+              <div style={{ marginBottom: '1rem' }}>
+                <span className="data-label" style={{ display: 'block', marginBottom: '0.4rem' }}>Observed ATT&CK Tactics:</span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {mitreAttack.observedTactics.map((tac: any) => (
+                    <a
+                      key={tac.id}
+                      href={tac.referenceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="indicator-tag"
+                      style={{ textDecoration: 'none', color: '#f8fafc', background: 'rgba(255,255,255,0.08)' }}
+                    >
+                      {tac.name} ({tac.id}) ↗
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Uncertainty / Missing Evidence Notes */}
+            {mitreAttack.uncertaintyNotes && mitreAttack.uncertaintyNotes.length > 0 && (
+              <div style={{ padding: '0.75rem 1rem', background: 'rgba(245, 158, 11, 0.08)', borderLeft: '3px solid #f59e0b', borderRadius: '4px', fontSize: '0.85rem', color: '#fcd34d' }}>
+                <strong>Evidence Qualification Note:</strong> {mitreAttack.uncertaintyNotes.join(' ')}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 7. SAFETY GUIDANCE & RECOMMENDATIONS */}
+      <div className="card recommendations-card">
+        <h2 className="card-title" style={{ color: '#10b981', borderBottomColor: 'rgba(16, 185, 129, 0.3)' }}>
+          08 / Safety Guidance & Recommendations
+        </h2>
+        {safetyGuidance?.summary && (
+          <p style={{ color: '#cbd5e1', marginBottom: '1rem' }}>{safetyGuidance.summary}</p>
+        )}
+        {safetyGuidance?.immediateActions && safetyGuidance.immediateActions.length > 0 ? (
+          <ul className="recommendations-list">
+            {safetyGuidance.immediateActions.map((rec: any, idx: number) => (
+              <li key={idx} className="recommendation-item">
+                <span className="check-icon">✓</span>
+                <div>
+                  <strong>{rec.action}</strong>
+                  {rec.reason && <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{rec.reason}</p>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : result.recommendations && result.recommendations.length > 0 ? (
+          <ul className="recommendations-list">
+            {result.recommendations.map((rec: string, idx: number) => (
+              <li key={idx} className="recommendation-item">
+                <span className="check-icon">✓</span> {rec}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="empty-state">No immediate defensive recommendations required.</div>
+        )}
+      </div>
+
+      {/* FINAL ACTIONS */}
+      <div className="dashboard-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+        <button 
+          className="analyze-btn" 
+          onClick={() => navigate('/')}
+          style={{ padding: '1rem 3rem', fontSize: '1.1rem' }}
+        >
+          Analyze Another Item
+        </button>
       </div>
     </div>
   );

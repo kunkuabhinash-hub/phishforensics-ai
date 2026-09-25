@@ -17,6 +17,7 @@ export * from './traceabilityAudit.ts';
 export * from './crossInvestigationComparison.ts';
 export * from './crossInvestigationExplanation.ts';
 export * from './analystIntelligenceBrief.ts';
+export * from './integrationContract.ts';
 
 
 

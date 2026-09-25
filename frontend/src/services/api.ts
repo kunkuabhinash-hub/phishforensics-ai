@@ -1,5 +1,5 @@
 // API Service layer for backend communication
-import { AnalysisRequest, AnalysisResponse } from '../types';
+import type { AnalysisRequest, AnalysisResponse } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 

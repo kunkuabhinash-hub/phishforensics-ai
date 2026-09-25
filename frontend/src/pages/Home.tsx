@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
-import { AnalysisRequest, InputType } from '../types';
+import type { AnalysisRequest, InputType } from '../types';
 
 export default function Home() {
   const navigate = useNavigate();

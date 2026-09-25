@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AnalysisResponse, AnalysisRequest } from '../types';
+import type { AnalysisResponse, AnalysisRequest } from '../types';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -63,14 +63,14 @@ export default function Dashboard() {
 
       {/* 1. EVIDENCE */}
       <div className="card">
-        <h2 className="card-title">Original Evidence</h2>
+        <h2 className="card-title">01 / Original Evidence</h2>
         {renderOriginalEvidence(result.originalRequest)}
       </div>
 
       {/* 2. ANALYSIS */}
       <div className="grid-2">
         <div className="card">
-          <h2 className="card-title">Investigation Summary</h2>
+          <h2 className="card-title">02 / Investigation Summary</h2>
           <div className="data-row">
             <span className="data-label">Status</span>
             <span className="data-value" style={{textTransform: 'capitalize'}}>{result.status}</span>
@@ -112,7 +112,7 @@ export default function Dashboard() {
       {/* 3. ATTACK DNA & RECONSTRUCTION (TIMELINE) */}
       <div className="grid-2">
         <div className="card">
-          <h2 className="card-title">Attack DNA</h2>
+          <h2 className="card-title">03 / Attack DNA</h2>
           {result.attackDna && Object.keys(result.attackDna).length > 0 ? (
             Object.entries(result.attackDna).map(([dimension, score]) => (
               <div key={dimension} className="dna-bar-container">
@@ -131,7 +131,7 @@ export default function Dashboard() {
         </div>
 
         <div className="card">
-          <h2 className="card-title">Attack Reconstruction Timeline</h2>
+          <h2 className="card-title">04 / Attack Reconstruction Timeline</h2>
           {result.timeline && result.timeline.length > 0 ? (
             <div className="timeline">
               {result.timeline.map((item, idx) => (
@@ -151,7 +151,7 @@ export default function Dashboard() {
       {/* 4. SAFE SIMULATION */}
       <div className="card simulation-card">
         <h2 className="card-title simulation-title">
-          Safe Simulation & Interactive Attack Chain
+          05 / Safe Simulation & Interactive Attack Chain
         </h2>
         
         {!result.simulation ? (
@@ -249,7 +249,7 @@ export default function Dashboard() {
       {/* 5. EDUCATION */}
       <div className="card education-card">
         <h2 className="card-title" style={{color: '#a855f7', borderBottomColor: 'rgba(168, 85, 247, 0.3)'}}>
-          Why This Matters
+          06 / Why This Matters
         </h2>
         
         {result.explanation ? (
@@ -300,7 +300,7 @@ export default function Dashboard() {
       {/* 6. RECOMMENDATIONS */}
       <div className="card recommendations-card">
         <h2 className="card-title" style={{color: '#10b981', borderBottomColor: 'rgba(16, 185, 129, 0.3)'}}>
-          Defensive Recommendations
+          07 / Defensive Recommendations
         </h2>
         {result.recommendations && result.recommendations.length > 0 ? (
           <ul className="recommendations-list">

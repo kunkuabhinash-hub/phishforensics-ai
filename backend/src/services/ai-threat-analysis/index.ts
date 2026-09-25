@@ -12,3 +12,5 @@ export * from './reasoningSchema.ts';
 export * from './promptBuilder.ts';
 export * from './reasoningValidator.ts';
 export * from './analystViewModel.ts';
+export * from './findingExplanation.ts';
+

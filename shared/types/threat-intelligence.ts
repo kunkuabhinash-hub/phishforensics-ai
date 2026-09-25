@@ -689,10 +689,39 @@ export interface AnalystTimelineEventView {
   artifactIds: string[];
 }
 
+export type ExplanationState = 
+  | 'supported'
+  | 'partially_supported'
+  | 'conflicted'
+  | 'insufficient_evidence'
+  | 'unknown';
+
+export interface ExplanationEvidenceReference {
+  evidenceId: string;
+  artifactId: string;
+  evidenceType: string;
+  status: 'observed' | 'inferred' | 'unverified' | 'unknown';
+  safeRepresentation: string;
+  originalDescription: string;
+  timestamp: string | undefined;
+}
+
+export interface FindingExplanation {
+  findingId: string;
+  conclusionSummary: string;
+  status: 'observed' | 'inferred' | 'unverified' | 'unknown';
+  explanationState: ExplanationState;
+  supportingEvidence: ExplanationEvidenceReference[];
+  contradictingEvidence: ExplanationEvidenceReference[];
+  missingEvidenceReferences: string[];
+  artifactIds: string[];
+}
+
 export interface AnalystInvestigationView {
   summary: AnalystInvestigationSummary;
   evidenceOverview: EvidenceItem[];
   keyFindings: AnalystFindingView[];
+  findingExplanations: FindingExplanation[];
   uncertaintyAndUnknowns: UncertaintyReport;
   attackerIntent: AttackerIntent;
   victimRequestedAction: VictimRequestedAction;

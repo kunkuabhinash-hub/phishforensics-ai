@@ -8,6 +8,7 @@ import type {
   AnalystCorrelationView,
   AnalystTimelineEventView
 } from '../../../../../shared/types/threat-intelligence.ts';
+import { buildFindingExplanation } from './findingExplanation.ts';
 
 /**
  * Projects a CanonicalThreatIntelligence result into a frontend-friendly 
@@ -91,11 +92,15 @@ export function buildAnalystInvestigationView(canonical: CanonicalThreatIntellig
     status: evt.status,
     artifactIds: evt.artifactIds,
   }));
+  
+  // 7. Finding Explanations
+  const findingExplanations = canonical.findings.map(f => buildFindingExplanation(f, canonical.evidence));
 
   return {
     summary,
     evidenceOverview: canonical.evidence,
     keyFindings,
+    findingExplanations,
     uncertaintyAndUnknowns: canonical.uncertaintyReport,
     attackerIntent: canonical.attackerIntent,
     victimRequestedAction: canonical.victimRequestedAction,

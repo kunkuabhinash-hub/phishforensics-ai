@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnalysisResponse, AnalysisRequest } from '../types';
 import './Dashboard.css';
@@ -5,6 +6,7 @@ import './Dashboard.css';
 export default function Dashboard() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [activeStage, setActiveStage] = useState<number>(0);
   
   const result: AnalysisResponse | undefined = location.state?.analysisResult;
 
@@ -149,6 +151,104 @@ export default function Dashboard() {
           <p style={{ color: 'var(--text-muted)' }}>{result.explanation}</p>
         ) : (
           <div className="empty-state">No detailed explanation provided</div>
+        )}
+      </div>
+
+      {/* SAFE SIMULATION & ATTACK RECONSTRUCTION */}
+      <div className="card simulation-card">
+        <h2 className="card-title simulation-title">
+          Safe Simulation & Attack Reconstruction
+        </h2>
+        
+        {!result.simulation ? (
+          <div className="empty-state">Attack reconstruction unavailable. Backend simulation not yet integrated.</div>
+        ) : result.simulation.status === 'unavailable' ? (
+          <div className="empty-state">Simulation endpoint is currently unavailable.</div>
+        ) : result.simulation.status === 'failed' ? (
+          <div className="empty-state" style={{color: 'var(--error)'}}>Safe simulation failed to generate.</div>
+        ) : result.simulation.status === 'running' ? (
+          <div className="empty-state" style={{color: 'var(--primary)'}}>Safe simulation is currently running...</div>
+        ) : (
+          <div className="simulation-content">
+            <div className="grid-2" style={{marginBottom: '1.5rem'}}>
+              {result.simulation.attackerObjective && (
+                <div className="simulation-box objective-box">
+                  <span className="box-label">Attacker Objective</span>
+                  <div className="box-value">{result.simulation.attackerObjective}</div>
+                </div>
+              )}
+              {result.simulation.victimAction && (
+                <div className="simulation-box action-box">
+                  <span className="box-label">Targeted Victim Action</span>
+                  <div className="box-value">{result.simulation.victimAction}</div>
+                </div>
+              )}
+            </div>
+
+            {result.simulation.consequencePreview && (
+              <div className="consequence-panel">
+                <span className="box-label" style={{color: '#ef4444'}}>Expected Consequence (Safe Preview):</span>
+                <p>{result.simulation.consequencePreview}</p>
+              </div>
+            )}
+
+            {result.simulation.stages && result.simulation.stages.length > 0 && (
+              <div className="reconstruction-interactive">
+                <h3 className="section-subtitle">Attack Chain</h3>
+                <div className="stage-controls">
+                  {result.simulation.stages.map((stage, idx) => (
+                    <button
+                      key={stage.id || idx}
+                      className={`stage-btn ${idx === activeStage ? 'active' : ''}`}
+                      onClick={() => setActiveStage(idx)}
+                    >
+                      Stage {idx + 1}
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="stage-details">
+                  <h4 className="stage-title">{result.simulation.stages[activeStage].title}</h4>
+                  <p className="stage-desc">{result.simulation.stages[activeStage].description}</p>
+                  
+                  <div className="stage-breakdown">
+                    {result.simulation.stages[activeStage].attackerAction && (
+                      <div className="breakdown-item">
+                        <strong>Attacker Action:</strong> {result.simulation.stages[activeStage].attackerAction}
+                      </div>
+                    )}
+                    {result.simulation.stages[activeStage].victimInteraction && (
+                      <div className="breakdown-item">
+                        <strong>Victim Interaction:</strong> {result.simulation.stages[activeStage].victimInteraction}
+                      </div>
+                    )}
+                    {result.simulation.stages[activeStage].expectedConsequence && (
+                      <div className="breakdown-item warning-text">
+                        <strong>Consequence:</strong> {result.simulation.stages[activeStage].expectedConsequence}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="stage-nav">
+                  <button 
+                    disabled={activeStage === 0} 
+                    onClick={() => setActiveStage(Math.max(0, activeStage - 1))}
+                    className="nav-btn"
+                  >
+                    ← Previous Stage
+                  </button>
+                  <button 
+                    disabled={activeStage === result.simulation!.stages!.length - 1} 
+                    onClick={() => setActiveStage(Math.min(result.simulation!.stages!.length - 1, activeStage + 1))}
+                    className="nav-btn"
+                  >
+                    Next Stage →
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
 

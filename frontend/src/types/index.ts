@@ -14,6 +14,23 @@ export interface AttackTimelineStage {
   description: string;
 }
 
+export interface AttackReconstructionStage {
+  id: string;
+  title: string;
+  description: string;
+  attackerAction?: string;
+  victimInteraction?: string;
+  expectedConsequence?: string;
+}
+
+export interface SafeSimulationData {
+  status: 'ready' | 'running' | 'completed' | 'failed' | 'unavailable';
+  attackerObjective?: string;
+  victimAction?: string;
+  consequencePreview?: string;
+  stages?: AttackReconstructionStage[];
+}
+
 export interface AnalysisResponse {
   // Temporary structure; to be updated when the API contract is finalized
   id: string;
@@ -28,6 +45,7 @@ export interface AnalysisResponse {
   timeline?: AttackTimelineStage[];
   explanation?: string;
   recommendations?: string[];
+  simulation?: SafeSimulationData;
   
   // To show original evidence
   originalRequest?: AnalysisRequest;

@@ -6,3 +6,4 @@ export * from './reconstruction-result.ts';
 export * from './reconstruction.ts';
 export * from './simulation.ts';
 export * from './threat-analysis.ts';
+export * from './mitre.ts';

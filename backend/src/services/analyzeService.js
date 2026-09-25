@@ -48,6 +48,16 @@ class AnalyzeService {
             const { runSimulationPipeline } = require('./simulationOrchestrator.ts');
             const finalResult = runSimulationPipeline(canonical, phase1);
             
+            // Deterministic MITRE ATT&CK mapping
+            const { mapToMitreAttack } = require('./mitre/mitreMapper.ts');
+            finalResult.mitreAttack = mapToMitreAttack(
+                canonical,
+                finalResult.reconstruction,
+                finalResult.attackDNA,
+                finalResult.evidence,
+                finalResult.input
+            );
+
             validateUnifiedContract(finalResult);
             
             return finalResult;

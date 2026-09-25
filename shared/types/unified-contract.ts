@@ -3,6 +3,7 @@ import type { AttackDNA } from './attack-dna.ts';
 import type { AttackReconstruction } from './reconstruction.ts';
 import type { SafeSimulation } from './simulation.ts';
 import type { SafetyGuidance } from './guidance.ts';
+import type { MitreAttackAnalysis } from './mitre.ts';
 
 export interface UnifiedPhishForensicsContract {
   /** Unique tracing identifier for the entire investigation lifecycle */
@@ -45,4 +46,7 @@ export interface UnifiedPhishForensicsContract {
   reconstruction?: AttackReconstruction | null; 
   safeSimulation?: SafeSimulation | null; 
   safetyGuidance?: SafetyGuidance | null; 
+
+  /** Standards-aligned MITRE ATT&CK Enterprise Mapping (Deterministic & Evidence-driven) */
+  mitreAttack?: MitreAttackAnalysis | null;
 }

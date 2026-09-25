@@ -1,5 +1,6 @@
 const AIEngine = require('./aiEngine');
 const { validatePhishForensicsResult } = require('../../../shared/validateContract');
+const { validateUnifiedContract } = require('../../../shared/validateUnifiedContract');
 
 /**
  * Analysis Service
@@ -28,6 +29,30 @@ class AnalyzeService {
             
         } catch (error) {
             console.error(`[AnalyzeService] Error processing content for ID: ${analysisId} - ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Process the suspicious content and return the UnifiedPhishForensicsContract (AI Phase)
+     * @param {string} analysisId 
+     * @param {import('../../../shared/types').InputMetadata} inputMetadata
+     */
+    static async processUnifiedContent(analysisId, inputMetadata) {
+        try {
+            console.log(`[AnalyzeService] Starting UNIFIED analysis for ID: ${analysisId}`);
+            
+            const { canonical, phase1 } = await AIEngine.analyzeUnified(analysisId, inputMetadata);
+            
+            // Hand off to Yashu's pipeline wrapper
+            const { runSimulationPipeline } = require('./simulationOrchestrator.ts');
+            const finalResult = runSimulationPipeline(canonical, phase1);
+            
+            validateUnifiedContract(finalResult);
+            
+            return finalResult;
+        } catch (error) {
+            console.error(`[AnalyzeService] Error processing UNIFIED content for ID: ${analysisId} - ${error.message}`);
             throw error;
         }
     }

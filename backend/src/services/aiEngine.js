@@ -88,6 +88,42 @@ class AIEngine {
             throw new AppError(`AI Engine Failure: ${error.message}`, 502, analysisId);
         }
     }
+
+    /**
+     * Executes the AI analysis and maps it to the new UnifiedPhishForensicsContract.
+     * Does NOT map Phase-2 fields (Reconstruction/Simulation).
+     */
+    static async analyzeUnified(analysisId, normalizedInput) {
+        try {
+            const { mapCanonicalToUnified } = require('./unifiedAdapter.ts');
+
+            let artifactType = 'text';
+            if (normalizedInput.type === 'url') artifactType = 'url';
+            if (normalizedInput.type === 'email') artifactType = 'email';
+            if (normalizedInput.type === 'image') artifactType = 'screenshot';
+
+            const rawInputs = {
+                id: analysisId,
+                type: artifactType,
+                content: normalizedInput.content,
+                metadata: {
+                    source: normalizedInput.source
+                }
+            };
+
+            const options = {
+                investigationId: analysisId
+            };
+
+            const fullResult = await runFullInvestigation(rawInputs, options);
+            const canonical = fullResult.canonical;
+
+            const phase1 = mapCanonicalToUnified(canonical, analysisId, normalizedInput.type, normalizedInput.content);
+            return { canonical, phase1 };
+        } catch (error) {
+            throw new AppError(`AI Engine Failure: ${error.message}`, 502, analysisId);
+        }
+    }
 }
 
 module.exports = AIEngine;

@@ -75,6 +75,9 @@ export function validateAndMapReasoning(
     return fallback;
   };
 
+  // Helper to ensure values expected to be arrays are defensively normalized
+  const ensureArray = <T>(val: any): T[] => Array.isArray(val) ? val : (val && typeof val === 'object' ? [val] : []);
+
   // Ensure default fallback values for critical structural fields
   const safeResult: ProviderAnalysisResult = {
     suggestedVerdict: rawReasoning.suggestedVerdict || 'unknown',
@@ -84,7 +87,7 @@ export function validateAndMapReasoning(
     summary: rawReasoning.summary || 'Analysis completed with insufficient reasoning details.',
     verdictJustification: rawReasoning.verdictJustification || 'No justification provided by reasoning engine.',
     
-    findings: (rawReasoning.findings || []).map(f => ({
+    findings: ensureArray<any>(rawReasoning.findings).map(f => ({
       category: f.category || 'general_observation',
       title: f.title || 'Uncategorized Finding',
       description: f.description || '',
@@ -98,7 +101,7 @@ export function validateAndMapReasoning(
     
     attackerIntent: {
       primaryObjective: rawReasoning.attackerIntent?.primaryObjective || 'Unknown',
-      secondaryObjectives: rawReasoning.attackerIntent?.secondaryObjectives || [],
+      secondaryObjectives: ensureArray<string>(rawReasoning.attackerIntent?.secondaryObjectives),
       targetedAsset: rawReasoning.attackerIntent?.targetedAsset || 'Unknown',
       intendedVictimAction: rawReasoning.attackerIntent?.intendedVictimAction || 'Unknown',
       potentialImpact: rawReasoning.attackerIntent?.potentialImpact || 'Unknown',
@@ -116,7 +119,7 @@ export function validateAndMapReasoning(
       confidence: validateConfidence(rawReasoning.victimRequestedAction?.confidence, 0),
     },
     
-    socialEngineering: (rawReasoning.socialEngineering || []).map(se => ({
+    socialEngineering: ensureArray<any>(rawReasoning.socialEngineering).map(se => ({
       techniqueName: se.techniqueName || 'Unknown Technique',
       explanation: se.explanation || '',
       supportingEvidenceIds: validateEvidenceIds(se.supportingEvidenceIds, `social engineering technique "${se.techniqueName}"`),
@@ -124,7 +127,7 @@ export function validateAndMapReasoning(
       status: se.status || 'inferred',
     })),
     
-    attackDNAAttributes: (rawReasoning.attackDNAAttributes || []).map(dna => ({
+    attackDNAAttributes: ensureArray<any>(rawReasoning.attackDNAAttributes).map(dna => ({
       category: dna.category || 'General',
       characteristic: dna.characteristic || 'Unknown',
       value: dna.value || '',
@@ -134,7 +137,7 @@ export function validateAndMapReasoning(
       explanation: dna.explanation || '',
     })),
     
-    reconstructionStages: (rawReasoning.reconstructionStages || []).map(stage => ({
+    reconstructionStages: ensureArray<any>(rawReasoning.reconstructionStages).map(stage => ({
       stageName: stage.stageName || 'Unknown Stage',
       description: stage.description || '',
       supportingEvidenceIds: validateEvidenceIds(stage.supportingEvidenceIds, `reconstruction stage "${stage.stageName}"`),
@@ -145,7 +148,7 @@ export function validateAndMapReasoning(
       uncertaintyNotes: stage.uncertaintyNotes,
     })),
     
-    crossArtifactCorrelations: (rawReasoning.crossArtifactCorrelations || []).map((corr, idx) => {
+    crossArtifactCorrelations: ensureArray<any>(rawReasoning.crossArtifactCorrelations).map((corr, idx) => {
       const validArtifactIds = (corr.artifactIds || []).filter(aId => {
         const isValid = validArtifacts.some(a => a.id === aId);
         if (!isValid) {
@@ -163,31 +166,31 @@ export function validateAndMapReasoning(
       };
     }),
     
-    unverifiedClaims: (rawReasoning.unverifiedClaims || []).map(claim => ({
+    unverifiedClaims: ensureArray<any>(rawReasoning.unverifiedClaims).map(claim => ({
       claim: claim.claim || '',
       reasonUnverified: claim.reasonUnverified || '',
       evidenceIds: validateEvidenceIds(claim.evidenceIds, 'unverified claim'),
     })),
     
-    conflictingSignals: (rawReasoning.conflictingSignals || []).map(conflict => ({
+    conflictingSignals: ensureArray<any>(rawReasoning.conflictingSignals).map(conflict => ({
       signalA: conflict.signalA || '',
       signalB: conflict.signalB || '',
       explanation: conflict.explanation || '',
     })),
     
-    missingEvidence: (rawReasoning.missingEvidence || []).map(missing => ({
+    missingEvidence: ensureArray<any>(rawReasoning.missingEvidence).map(missing => ({
       missingItem: missing.missingItem || 'Unknown Data',
       whyNeeded: missing.whyNeeded || '',
       impactOnAnalysis: missing.impactOnAnalysis || '',
     })),
     
-    unresolvedQuestions: rawReasoning.unresolvedQuestions || [],
-    nextInvestigationActions: (rawReasoning.nextInvestigationActions || []).map(action => ({
+    unresolvedQuestions: ensureArray<string>(rawReasoning.unresolvedQuestions),
+    nextInvestigationActions: ensureArray<any>(rawReasoning.nextInvestigationActions).map(action => ({
       action: action.action || 'Unknown action',
       reason: action.reason || 'No reason provided',
     })),
     
-    defensiveRecommendations: (rawReasoning.defensiveRecommendations || []).map(rec => ({
+    defensiveRecommendations: ensureArray<any>(rawReasoning.defensiveRecommendations).map(rec => ({
       priority: rec.priority || 'medium',
       title: rec.title || 'General Recommendation',
       action: rec.action || '',

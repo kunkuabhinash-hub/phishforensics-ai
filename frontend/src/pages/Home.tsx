@@ -83,10 +83,17 @@ export default function Home() {
       };
       
       const response = await apiService.submitAnalysis(request);
+      
+      // Attach the original request so the dashboard can render the "Original Evidence" safely
+      const responseWithEvidence = {
+        ...response,
+        originalRequest: request
+      };
+      
       setIsSuccess(true);
       
       // Navigate to dashboard and pass the result in state for Step 4
-      navigate('/dashboard', { state: { analysisResult: response } });
+      navigate('/dashboard', { state: { analysisResult: responseWithEvidence } });
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'Connection to analysis engine failed. The backend API is currently unavailable.');

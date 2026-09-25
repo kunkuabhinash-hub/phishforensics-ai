@@ -1,6 +1,8 @@
+const AIEngine = require('./aiEngine');
+
 /**
  * Analysis Service
- * Responsible for orchestrating the AI analysis pipeline.
+ * Responsible for orchestrating the AI analysis pipeline and future modules.
  */
 class AnalyzeService {
     /**
@@ -9,12 +11,23 @@ class AnalyzeService {
      * @returns {Promise<import('../../../shared/types').PhishForensicsResult>}
      */
     static async processContent(inputMetadata) {
-        // TODO: Hemanth will plug in the AI implementation here.
-        // The AI will take `inputMetadata.content`, analyze it, and construct the PhishForensicsResult.
-        // 
-        // Per requirements: Do NOT implement fake AI, risk scores, or hardcoded results.
-        
-        throw new Error("NOT_IMPLEMENTED_AI_ENGINE_PENDING");
+        try {
+            // 1. Pass the validated input to the AI engine boundary
+            const aiResult = await AIEngine.analyze(inputMetadata);
+            
+            // 2. FUTURE PIPELINE STEPS (Do NOT implement yet):
+            // - Attack DNA Extraction (Yashu)
+            // - Attack Reconstruction Pipeline (Yashu)
+            // - Safe Simulation Setup (Monish)
+            
+            // 3. Return the fully processed result back to the controller
+            return aiResult;
+            
+        } catch (error) {
+            // Propagate errors cleanly to the controller
+            console.error('[AnalyzeService] Error processing content:', error.message);
+            throw error;
+        }
     }
 }
 

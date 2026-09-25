@@ -31,6 +31,12 @@ export interface SafeSimulationData {
   stages?: AttackReconstructionStage[];
 }
 
+export interface ForensicTakeaways {
+  tactic?: string;
+  manipulation?: string;
+  target?: string;
+}
+
 export interface AnalysisResponse {
   // Temporary structure; to be updated when the API contract is finalized
   id: string;
@@ -46,6 +52,8 @@ export interface AnalysisResponse {
   explanation?: string;
   recommendations?: string[];
   simulation?: SafeSimulationData;
+  educationalLesson?: string;
+  forensicTakeaways?: ForensicTakeaways;
   
   // To show original evidence
   originalRequest?: AnalysisRequest;

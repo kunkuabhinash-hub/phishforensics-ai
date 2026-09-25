@@ -61,8 +61,14 @@ export default function Dashboard() {
         </button>
       </div>
 
+      {/* 1. EVIDENCE */}
+      <div className="card">
+        <h2 className="card-title">Original Evidence</h2>
+        {renderOriginalEvidence(result.originalRequest)}
+      </div>
+
+      {/* 2. ANALYSIS */}
       <div className="grid-2">
-        {/* INVESTIGATION SUMMARY */}
         <div className="card">
           <h2 className="card-title">Investigation Summary</h2>
           <div className="data-row">
@@ -89,7 +95,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* EVIDENCE / INDICATORS */}
         <div className="card">
           <h2 className="card-title">Detected Indicators</h2>
           {result.indicators && result.indicators.length > 0 ? (
@@ -104,8 +109,8 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* 3. ATTACK DNA & RECONSTRUCTION (TIMELINE) */}
       <div className="grid-2">
-        {/* ATTACK DNA */}
         <div className="card">
           <h2 className="card-title">Attack DNA</h2>
           {result.attackDna && Object.keys(result.attackDna).length > 0 ? (
@@ -125,7 +130,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* ATTACK TIMELINE */}
         <div className="card">
           <h2 className="card-title">Attack Reconstruction Timeline</h2>
           {result.timeline && result.timeline.length > 0 ? (
@@ -144,20 +148,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* FORENSIC EXPLANATION */}
-      <div className="card">
-        <h2 className="card-title">Forensic Explanation</h2>
-        {result.explanation ? (
-          <p style={{ color: 'var(--text-muted)' }}>{result.explanation}</p>
-        ) : (
-          <div className="empty-state">No detailed explanation provided</div>
-        )}
-      </div>
-
-      {/* SAFE SIMULATION & ATTACK RECONSTRUCTION */}
+      {/* 4. SAFE SIMULATION */}
       <div className="card simulation-card">
         <h2 className="card-title simulation-title">
-          Safe Simulation & Attack Reconstruction
+          Safe Simulation & Interactive Attack Chain
         </h2>
         
         {!result.simulation ? (
@@ -197,13 +191,13 @@ export default function Dashboard() {
                 <h3 className="section-subtitle">Attack Chain</h3>
                 <div className="stage-controls">
                   {result.simulation.stages.map((stage, idx) => (
-                    <button
+                     <button
                       key={stage.id || idx}
                       className={`stage-btn ${idx === activeStage ? 'active' : ''}`}
                       onClick={() => setActiveStage(idx)}
-                    >
-                      Stage {idx + 1}
-                    </button>
+                     >
+                       Stage {idx + 1}
+                     </button>
                   ))}
                 </div>
                 
@@ -252,28 +246,86 @@ export default function Dashboard() {
         )}
       </div>
 
-      <div className="grid-2">
-        {/* RECOMMENDATIONS */}
-        <div className="card">
-          <h2 className="card-title">Security Recommendations</h2>
-          {result.recommendations && result.recommendations.length > 0 ? (
-            <ul className="recommendations-list">
-              {result.recommendations.map((rec, idx) => (
-                <li key={idx}>{rec}</li>
-              ))}
-            </ul>
-          ) : (
-            <div className="empty-state">No recommendations provided</div>
-          )}
-        </div>
+      {/* 5. EDUCATION */}
+      <div className="card education-card">
+        <h2 className="card-title" style={{color: '#a855f7', borderBottomColor: 'rgba(168, 85, 247, 0.3)'}}>
+          Why This Matters
+        </h2>
+        
+        {result.explanation ? (
+          <div className="education-section">
+            <h3 className="section-subtitle">Forensic Explanation</h3>
+            <p style={{ color: 'var(--text-muted)' }}>{result.explanation}</p>
+          </div>
+        ) : (
+          <div className="empty-state">No detailed explanation provided</div>
+        )}
 
-        {/* ORIGINAL EVIDENCE */}
-        <div className="card">
-          <h2 className="card-title">Original Evidence</h2>
-          {renderOriginalEvidence(result.originalRequest)}
-        </div>
+        {result.educationalLesson && (
+          <div className="education-section" style={{marginTop: '1.5rem'}}>
+             <h3 className="section-subtitle">Security Lesson</h3>
+             <div className="lesson-panel">
+               {result.educationalLesson}
+             </div>
+          </div>
+        )}
+
+        {result.forensicTakeaways && (
+          <div className="takeaways-section" style={{marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)'}}>
+            <h3 className="section-subtitle">Key Takeaways</h3>
+            <div className="grid-2">
+              {result.forensicTakeaways.tactic && (
+                <div className="takeaway-item">
+                  <span className="data-label">Attacker Tactic</span>
+                  <div className="data-value">{result.forensicTakeaways.tactic}</div>
+                </div>
+              )}
+              {result.forensicTakeaways.manipulation && (
+                <div className="takeaway-item">
+                  <span className="data-label">Manipulation Technique</span>
+                  <div className="data-value">{result.forensicTakeaways.manipulation}</div>
+                </div>
+              )}
+              {result.forensicTakeaways.target && (
+                <div className="takeaway-item">
+                  <span className="data-label">Targeted Information</span>
+                  <div className="data-value">{result.forensicTakeaways.target}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* 6. RECOMMENDATIONS */}
+      <div className="card recommendations-card">
+        <h2 className="card-title" style={{color: '#10b981', borderBottomColor: 'rgba(16, 185, 129, 0.3)'}}>
+          Defensive Recommendations
+        </h2>
+        {result.recommendations && result.recommendations.length > 0 ? (
+          <ul className="recommendations-list">
+            {result.recommendations.map((rec, idx) => (
+              <li key={idx} className="recommendation-item">
+                <span className="check-icon">✓</span> {rec}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="empty-state">No recommendations provided</div>
+        )}
+      </div>
+
+      {/* 7. FINAL ACTIONS */}
+      <div className="dashboard-actions" style={{display: 'flex', justifyContent: 'center', marginTop: '1rem'}}>
+         <button 
+           className="analyze-btn" 
+           onClick={() => navigate('/')}
+           style={{padding: '1rem 3rem', fontSize: '1.1rem'}}
+         >
+           Analyze Another Item
+         </button>
+      </div>
+      
     </div>
   );
 }

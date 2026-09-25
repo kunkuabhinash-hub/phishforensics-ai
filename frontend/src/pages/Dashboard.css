@@ -383,3 +383,59 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Education */
+.education-card {
+  border: 1px solid #a855f7;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.05);
+}
+
+.lesson-panel {
+  background: rgba(168, 85, 247, 0.1);
+  border-left: 3px solid #a855f7;
+  padding: 1rem;
+  border-radius: 0 6px 6px 0;
+  color: #f8fafc;
+  line-height: 1.6;
+}
+
+.takeaway-item {
+  background: #0f172a;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+/* Recommendations */
+.recommendations-card {
+  border: 1px solid #10b981;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.05);
+}
+
+.recommendations-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recommendation-item {
+  background: #0f172a;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.recommendation-item:last-child {
+  margin-bottom: 0;
+}
+
+.check-icon {
+  color: #10b981;
+  font-weight: bold;
+}

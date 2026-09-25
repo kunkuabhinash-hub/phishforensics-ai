@@ -846,3 +846,35 @@ export interface CrossInvestigationPatternComparison {
   unknownPatterns: BehavioralPatternMatch[];
   summary: CrossInvestigationPatternComparisonSummary;
 }
+
+// ============================================================================
+// 22. CROSS-INVESTIGATION PATTERN EXPLANATION
+// ============================================================================
+
+export interface PatternEvidenceSupport {
+  investigationId: string;
+  status: 'observed' | 'inferred' | 'unverified' | 'unknown';
+  supportingEvidence: ExplanationEvidenceReference[];
+  conflictingEvidence: ExplanationEvidenceReference[];
+  missingEvidenceIds: string[];
+  affectedArtifactIds: string[];
+}
+
+export interface PatternNextInvestigationAction {
+  action: string;
+  reason: string;
+  investigationId?: string;
+}
+
+export interface CrossInvestigationPatternExplanation {
+  patternId: string;
+  patternType: BehavioralPatternType;
+  patternDescription: string;
+  comparisonStatus: PatternComparisonStatus;
+  participatingInvestigationIds: string[];
+  evidenceSupportByInvestigation: Record<string, PatternEvidenceSupport>;
+  defensiveInterpretation: string;
+  unresolvedUncertainty: string[];
+  suggestedNextActions: PatternNextInvestigationAction[];
+}
+

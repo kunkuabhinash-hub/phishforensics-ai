@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { AnalysisRequest, InputType } from '../types';
 
 export default function Home() {
+  const navigate = useNavigate();
   const [inputType, setInputType] = useState<InputType>('url');
   const [inputValue, setInputValue] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -68,7 +70,7 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate() || isLoading) return;
 
     setIsLoading(true);
     setError(null);
@@ -80,11 +82,14 @@ export default function Home() {
         content: inputValue
       };
       
-      await apiService.submitAnalysis(request);
+      const response = await apiService.submitAnalysis(request);
       setIsSuccess(true);
+      
+      // Navigate to dashboard and pass the result in state for Step 4
+      navigate('/dashboard', { state: { analysisResult: response } });
     } catch (err: any) {
       console.error(err);
-      setError('Connection to analysis engine failed. The backend API is currently unavailable.');
+      setError(err.message || 'Connection to analysis engine failed. The backend API is currently unavailable.');
     } finally {
       setIsLoading(false);
     }

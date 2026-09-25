@@ -5,19 +5,26 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 export const apiService = {
   async submitAnalysis(request: AnalysisRequest): Promise<AnalysisResponse> {
-    const response = await fetch(`${API_BASE_URL}/analyze`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/analyze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to submit analysis. Backend API may be unavailable.');
+      if (!response.ok) {
+        throw new Error(`API Error ${response.status}: Failed to submit analysis.`);
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error('Network Error: Unable to connect to the backend API.');
+      }
+      throw error;
     }
-
-    return response.json();
   },
   
   async getAnalysisStatus(id: string): Promise<AnalysisResponse> {

@@ -735,4 +735,70 @@ export interface AnalystInvestigationView {
   investigationQuality: InvestigationQuality;
   missingEvidence: MissingEvidenceItem[];
   defensiveRecommendations: DefensiveRecommendation[];
+  traceabilityAudit: InvestigationTraceabilityAudit;
+}
+
+// ============================================================================
+// 20. INVESTIGATION TRACEABILITY AUDIT
+// ============================================================================
+
+export type TraceabilityState = 
+  | 'fully_traceable'
+  | 'partially_traceable'
+  | 'conflicted'
+  | 'untraceable'
+  | 'unknown';
+
+export interface FindingTraceabilityRecord {
+  findingId: string;
+  status: 'observed' | 'inferred' | 'unverified' | 'unknown';
+  supportingEvidenceIds: string[];
+  contradictingEvidenceIds: string[];
+  missingEvidenceIds: string[];
+  supportingEvidenceResolved: number;
+  contradictingEvidenceResolved: number;
+  traceabilityState: TraceabilityState;
+}
+
+export interface EvidenceTraceabilityRecord {
+  evidenceId: string;
+  artifactId: string;
+  usedByFindingIds: string[];
+  usedAsSupportingEvidence: boolean;
+  usedAsContradictingEvidence: boolean;
+  usageState: 'used' | 'unused' | 'unknown';
+}
+
+export type ArtifactCoverageState = 
+  | 'covered'
+  | 'partially_covered'
+  | 'no_evidence'
+  | 'unknown';
+
+export interface ArtifactTraceabilityRecord {
+  artifactId: string;
+  evidenceIds: string[];
+  findingIds: string[];
+  coverageState: ArtifactCoverageState;
+}
+
+export interface InvestigationTraceabilityAuditSummary {
+  totalFindings: number;
+  findingsWithSupportingEvidence: number;
+  findingsWithContradictingEvidence: number;
+  findingsWithMissingEvidence: number;
+  totalEvidenceItems: number;
+  evidenceUsedByFindings: number;
+  unusedEvidenceItems: number;
+  totalArtifacts: number;
+  artifactsWithEvidence: number;
+  artifactsWithoutEvidence: number;
+}
+
+export interface InvestigationTraceabilityAudit {
+  summary: InvestigationTraceabilityAuditSummary;
+  findingAudits: FindingTraceabilityRecord[];
+  evidenceAudits: EvidenceTraceabilityRecord[];
+  artifactAudits: ArtifactTraceabilityRecord[];
+  unresolvedTraceabilityIssues: string[];
 }

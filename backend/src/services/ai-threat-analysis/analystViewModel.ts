@@ -9,6 +9,7 @@ import type {
   AnalystTimelineEventView
 } from '../../../../../shared/types/threat-intelligence.ts';
 import { buildFindingExplanation } from './findingExplanation.ts';
+import { buildInvestigationTraceabilityAudit } from './traceabilityAudit.ts';
 
 /**
  * Projects a CanonicalThreatIntelligence result into a frontend-friendly 
@@ -114,5 +115,7 @@ export function buildAnalystInvestigationView(canonical: CanonicalThreatIntellig
     investigationQuality: canonical.investigationQuality,
     missingEvidence: canonical.missingEvidence,
     defensiveRecommendations: canonical.defensiveRecommendations,
+    traceabilityAudit: buildInvestigationTraceabilityAudit(canonical),
   };
 }
+

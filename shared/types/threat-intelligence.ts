@@ -802,3 +802,47 @@ export interface InvestigationTraceabilityAudit {
   artifactAudits: ArtifactTraceabilityRecord[];
   unresolvedTraceabilityIssues: string[];
 }
+
+// ============================================================================
+// 21. CROSS-INVESTIGATION BEHAVIORAL PATTERN COMPARISON
+// ============================================================================
+
+export type BehavioralPatternType = 
+  | 'attack_dna'
+  | 'social_engineering_technique'
+  | 'victim_requested_action'
+  | 'shared_observable';
+
+export type PatternComparisonStatus = 
+  | 'shared'
+  | 'unique'
+  | 'conflicted'
+  | 'unknown';
+
+export interface BehavioralPatternMatch {
+  patternId: string;
+  patternType: BehavioralPatternType;
+  label: string;
+  investigationIds: string[];
+  supportingEvidenceByInvestigation: Record<string, string[]>;
+  statusByInvestigation: Record<string, 'observed' | 'inferred' | 'unverified' | 'unknown'>;
+  status: PatternComparisonStatus;
+  explanation: string;
+}
+
+export interface CrossInvestigationPatternComparisonSummary {
+  totalInvestigationsCompared: number;
+  sharedPatternCount: number;
+  uniquePatternCount: number;
+  conflictedPatternCount: number;
+  unknownPatternCount: number;
+}
+
+export interface CrossInvestigationPatternComparison {
+  investigationIds: string[];
+  sharedPatterns: BehavioralPatternMatch[];
+  uniquePatternsByInvestigation: Record<string, BehavioralPatternMatch[]>;
+  contradictoryPatterns: BehavioralPatternMatch[];
+  unknownPatterns: BehavioralPatternMatch[];
+  summary: CrossInvestigationPatternComparisonSummary;
+}

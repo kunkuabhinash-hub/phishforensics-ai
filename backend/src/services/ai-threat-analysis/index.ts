@@ -14,4 +14,6 @@ export * from './reasoningValidator.ts';
 export * from './analystViewModel.ts';
 export * from './findingExplanation.ts';
 export * from './traceabilityAudit.ts';
+export * from './crossInvestigationComparison.ts';
+
 

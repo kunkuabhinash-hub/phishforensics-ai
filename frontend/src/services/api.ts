@@ -14,7 +14,7 @@ export const apiService = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to submit analysis');
+      throw new Error('Failed to submit analysis. Backend API may be unavailable.');
     }
 
     return response.json();

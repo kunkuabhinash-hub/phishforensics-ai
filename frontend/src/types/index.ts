@@ -1,13 +1,12 @@
-// Shared frontend types, aligned with future backend contracts
+export type InputType = 'url' | 'text' | 'image';
 
 export interface AnalysisRequest {
-  url: string;
+  type: InputType;
+  content: string; // URL string, text content, or base64 image data
 }
 
 export interface AnalysisResponse {
   // Temporary structure; to be updated when the API contract is finalized
   id: string;
-  url: string;
   status: 'pending' | 'completed' | 'failed';
-  // Add more fields here as the backend is developed
 }

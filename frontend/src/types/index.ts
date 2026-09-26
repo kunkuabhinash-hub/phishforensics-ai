@@ -58,3 +58,17 @@ export interface AnalysisResponse {
   // To show original evidence
   originalRequest?: AnalysisRequest;
 }
+
+export interface InvestigationHistoryItem {
+  analysisId: string;
+  createdAt: string;
+  updatedAt: string;
+  sourceType: string;
+  inputContent: string;
+  verdict: string;
+  severity: string;
+  riskScore: number | null;
+  confidence: number;
+  justification: string;
+}
+

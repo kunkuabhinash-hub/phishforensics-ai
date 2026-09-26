@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { apiService } from '../services/api';
+import type { InvestigationHistoryItem } from '../types';
+import InvestigationHistoryModal from '../components/InvestigationHistoryModal';
 import './Dashboard.css';
 
 // ─── HELPER: SAFE INDICATOR DEFANGING ─────────────────────────────────
@@ -246,7 +249,17 @@ export type FeaturePanelId =
 export default function Dashboard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const result: any = location.state?.analysisResult;
+
+  // Primary investigation result state (can be updated when selecting from history)
+  const [currentResult, setCurrentResult] = useState<any>(() => location.state?.analysisResult || location.state?.result || null);
+  const result = currentResult;
+
+  // Sync if location state changes via navigation
+  useEffect(() => {
+    if (location.state?.analysisResult || location.state?.result) {
+      setCurrentResult(location.state.analysisResult || location.state.result);
+    }
+  }, [location.state]);
 
   // Active feature panel (null by default for "Simple by Default, Deep When Requested")
   const [activePanel, setActivePanel] = useState<FeaturePanelId | null>(null);
@@ -259,50 +272,115 @@ export default function Dashboard() {
   const [copiedIoc, setCopiedIoc] = useState<string | null>(null);
   const [showCompareModal, setShowCompareModal] = useState<boolean>(false);
   const [showExportDropdown, setShowExportDropdown] = useState<boolean>(false);
-  const [investigationHistory] = useState<any[]>(() => {
-    try {
-      const stored = localStorage.getItem('phishforensics_investigation_history');
-      let hist: any[] = stored ? JSON.parse(stored) : [];
-      if (result && result.analysisId) {
-        const existsIndex = hist.findIndex(item => item.analysisId === result.analysisId);
-        if (existsIndex >= 0) {
-          hist[existsIndex] = result;
-        } else {
-          hist.unshift(result);
-        }
-        if (hist.length > 10) hist = hist.slice(0, 10);
-        localStorage.setItem('phishforensics_investigation_history', JSON.stringify(hist));
-      }
-      return hist;
-    } catch {
-      return result ? [result] : [];
+  const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
+
+  // SQLite Investigation History & Comparison Cache
+  const [historyList, setHistoryList] = useState<InvestigationHistoryItem[]>([]);
+  const [investigationsCache, setInvestigationsCache] = useState<Record<string, any>>(() => {
+    if (location.state?.analysisResult?.analysisId) {
+      return { [location.state.analysisResult.analysisId]: location.state.analysisResult };
     }
+    if (location.state?.result?.analysisId) {
+      return { [location.state.result.analysisId]: location.state.result };
+    }
+    return {};
   });
+  const [compareLoading, setCompareLoading] = useState<boolean>(false);
 
   const [compareAttackAId, setCompareAttackAId] = useState<string>(() => result?.analysisId || '');
-  const [compareAttackBId, setCompareAttackBId] = useState<string>(() => {
+  const [compareAttackBId, setCompareAttackBId] = useState<string>('');
+
+  const loadHistory = async () => {
     try {
-      const stored = localStorage.getItem('phishforensics_investigation_history');
-      const hist: any[] = stored ? JSON.parse(stored) : [];
-      return hist.length > 1 ? hist[1].analysisId : (result?.analysisId || '');
-    } catch {
-      return result?.analysisId || '';
+      const items = await apiService.getInvestigations(50, 0);
+      setHistoryList(items);
+      // Auto-populate Attack B if available and not yet set
+      if (items.length > 0) {
+        if (!compareAttackAId && items[0]) {
+          setCompareAttackAId(items[0].analysisId);
+        }
+        if (!compareAttackBId) {
+          const second = items.find(it => it.analysisId !== (result?.analysisId || items[0]?.analysisId));
+          if (second) {
+            setCompareAttackBId(second.analysisId);
+          } else if (items[0]) {
+            setCompareAttackBId(items[0].analysisId);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load investigation history from SQLite:', err);
     }
-  });
+  };
+
+  useEffect(() => {
+    loadHistory();
+  }, [showCompareModal, showHistoryModal]);
+
+  // Keep cache and Attack A synced with current result
+  useEffect(() => {
+    if (result?.analysisId) {
+      setInvestigationsCache(prev => ({
+        ...prev,
+        [result.analysisId]: result
+      }));
+      if (!compareAttackAId) {
+        setCompareAttackAId(result.analysisId);
+      }
+    }
+  }, [result]);
+
+  // Fetch full investigation contracts for Attack A & Attack B when compare modal is open
+  useEffect(() => {
+    const fetchInvestigationIfNeeded = async (id: string) => {
+      if (!id || investigationsCache[id]) return;
+      try {
+        setCompareLoading(true);
+        const data = await apiService.getInvestigation(id);
+        setInvestigationsCache(prev => ({ ...prev, [id]: data }));
+      } catch (err) {
+        console.warn(`Failed to fetch investigation ${id} from SQLite:`, err);
+      } finally {
+        setCompareLoading(false);
+      }
+    };
+
+    if (showCompareModal) {
+      if (compareAttackAId) fetchInvestigationIfNeeded(compareAttackAId);
+      if (compareAttackBId) fetchInvestigationIfNeeded(compareAttackBId);
+    }
+  }, [showCompareModal, compareAttackAId, compareAttackBId, investigationsCache]);
 
   if (!result) {
     return (
       <div className="dashboard-container">
+        <InvestigationHistoryModal 
+          isOpen={showHistoryModal} 
+          onClose={() => setShowHistoryModal(false)}
+          onSelectInvestigation={(investigation) => {
+            setCurrentResult(investigation);
+            setActivePanel(null);
+          }}
+        />
         <div className="forensic-card empty-state-box" style={{ maxWidth: '600px', margin: '4rem auto' }}>
           <h2 style={{ fontSize: '1.25rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
-            No Analysis Result Found
+            No Active Investigation Loaded
           </h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            Please submit an artifact for investigation first to generate a forensic report.
+            Submit an artifact for analysis or load an existing investigation stored in your local SQLite database.
           </p>
-          <button className="btn-primary-large" onClick={() => navigate('/')}>
-            ← Start New Investigation
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <button className="btn-primary-large" onClick={() => navigate('/')}>
+              ← Start New Investigation
+            </button>
+            <button 
+              className="btn-header-action" 
+              style={{ padding: '0.75rem 1.25rem', fontSize: '0.9rem', fontWeight: 600 }}
+              onClick={() => setShowHistoryModal(true)}
+            >
+              📁 Stored History
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -510,9 +588,9 @@ export default function Dashboard() {
     ? new Date(result.timestamp).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
     : 'Live Session';
 
-  // Compare investigations lookup
-  const attackA = investigationHistory.find(item => item.analysisId === compareAttackAId) || result;
-  const attackB = investigationHistory.find(item => item.analysisId === compareAttackBId) || result;
+  // Compare investigations lookup from SQLite cache
+  const attackA = investigationsCache[compareAttackAId] || (compareAttackAId === result?.analysisId ? result : null);
+  const attackB = investigationsCache[compareAttackBId] || (compareAttackBId === result?.analysisId ? result : null);
 
   // Panel tag and title helpers
   const getPanelTag = (panel: FeaturePanelId) => {
@@ -547,6 +625,15 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
+      {/* ─── INVESTIGATION HISTORY MODAL ────────────────────────────────────── */}
+      <InvestigationHistoryModal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        onSelectInvestigation={(inv) => {
+          setCurrentResult(inv);
+          setActivePanel(null);
+        }}
+      />
       
       {/* ─── INVESTIGATION TOP UTILITY BAR ─────────────────────────────────── */}
       <section className="investigation-top-bar" aria-label="Investigation Metadata and Actions">
@@ -563,6 +650,16 @@ export default function Dashboard() {
         </div>
 
         <div className="header-actions-group">
+          {/* History Button */}
+          <button 
+            className="btn-header-action" 
+            onClick={() => setShowHistoryModal(true)}
+            type="button"
+            aria-label="Investigation History"
+          >
+            📁 History
+          </button>
+
           {/* Compare Attacks Button */}
           <button 
             className="btn-header-action" 
@@ -1027,7 +1124,7 @@ export default function Dashboard() {
               Benchmark this investigation against previous threat artifacts.
             </p>
             <div className="feature-card-footer">
-              <span className="feature-card-chip">{investigationHistory.length} in history</span>
+              <span className="feature-card-chip">{historyList.length || (result ? 1 : 0)} in history</span>
               <span className="feature-card-action-hint">Launch ⇄</span>
             </div>
           </button>
@@ -1835,43 +1932,61 @@ export default function Dashboard() {
 
             <div className="compare-selectors-bar">
               <div>
-                <label className="data-field-label">Attack A (Investigation)</label>
+                <label className="data-field-label">Attack A (Select Investigation)</label>
                 <select 
                   className="select-input-styled" 
                   value={compareAttackAId} 
                   onChange={e => setCompareAttackAId(e.target.value)}
                 >
-                  {investigationHistory.map((item, idx) => (
-                    <option key={item.analysisId || idx} value={item.analysisId}>
-                      {item.analysisId ? item.analysisId.substring(0, 12) + '...' : `Session ${idx + 1}`} ({item.threatAssessment?.verdict?.toUpperCase() || 'RESULT'})
+                  {historyList.length === 0 ? (
+                    <option value={result?.analysisId || ''}>
+                      {result?.analysisId ? result.analysisId.substring(0, 14) + '...' : 'Current Session'} ({result?.threatAssessment?.verdict?.toUpperCase() || 'RESULT'})
                     </option>
-                  ))}
+                  ) : (
+                    historyList.map((item) => (
+                      <option key={item.analysisId} value={item.analysisId}>
+                        {item.analysisId.substring(0, 12)}... | {item.sourceType.toUpperCase()} | {item.verdict.toUpperCase()} (Risk {item.riskScore ?? 'N/A'})
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
 
               <div>
-                <label className="data-field-label">Attack B (Investigation)</label>
+                <label className="data-field-label">Attack B (Select Investigation)</label>
                 <select 
                   className="select-input-styled" 
                   value={compareAttackBId} 
                   onChange={e => setCompareAttackBId(e.target.value)}
                 >
-                  {investigationHistory.map((item, idx) => (
-                    <option key={item.analysisId || idx} value={item.analysisId}>
-                      {item.analysisId ? item.analysisId.substring(0, 12) + '...' : `Session ${idx + 1}`} ({item.threatAssessment?.verdict?.toUpperCase() || 'RESULT'})
+                  {historyList.length === 0 ? (
+                    <option value={result?.analysisId || ''}>
+                      {result?.analysisId ? result.analysisId.substring(0, 14) + '...' : 'Current Session'} ({result?.threatAssessment?.verdict?.toUpperCase() || 'RESULT'})
                     </option>
-                  ))}
+                  ) : (
+                    historyList.map((item) => (
+                      <option key={item.analysisId} value={item.analysisId}>
+                        {item.analysisId.substring(0, 12)}... | {item.sourceType.toUpperCase()} | {item.verdict.toUpperCase()} (Risk {item.riskScore ?? 'N/A'})
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
             </div>
+
+            {compareLoading && (
+              <div style={{ padding: '0.5rem 0', fontSize: '0.82rem', color: 'var(--blue-primary)', fontFamily: 'var(--font-mono)' }}>
+                ⚡ Fetching stored investigation from SQLite...
+              </div>
+            )}
 
             {/* Comparison Table */}
             <table className="comparison-table">
               <thead>
                 <tr>
-                  <th style={{ width: '28%' }}>Dimension</th>
-                  <th style={{ width: '36%' }}>Attack A ({attackA?.analysisId?.substring(0, 8) || 'Current'})</th>
-                  <th style={{ width: '36%' }}>Attack B ({attackB?.analysisId?.substring(0, 8) || 'Current'})</th>
+                  <th style={{ width: '25%' }}>Dimension</th>
+                  <th style={{ width: '37.5%' }}>Attack A ({attackA?.analysisId ? attackA.analysisId.substring(0, 8) + '...' : 'Investigation A'})</th>
+                  <th style={{ width: '37.5%' }}>Attack B ({attackB?.analysisId ? attackB.analysisId.substring(0, 8) + '...' : 'Investigation B'})</th>
                 </tr>
               </thead>
               <tbody>
@@ -1879,12 +1994,12 @@ export default function Dashboard() {
                   <td>Threat Verdict</td>
                   <td>
                     <span className={`pill-badge ${getVerdictClass(attackA?.threatAssessment?.verdict)}`}>
-                      {attackA?.threatAssessment?.verdict || 'Unknown'}
+                      {attackA?.threatAssessment?.verdict?.toUpperCase() || 'UNKNOWN'}
                     </span>
                   </td>
                   <td>
                     <span className={`pill-badge ${getVerdictClass(attackB?.threatAssessment?.verdict)}`}>
-                      {attackB?.threatAssessment?.verdict || 'Unknown'}
+                      {attackB?.threatAssessment?.verdict?.toUpperCase() || 'UNKNOWN'}
                     </span>
                   </td>
                 </tr>
@@ -1892,44 +2007,115 @@ export default function Dashboard() {
                   <td>Severity Level</td>
                   <td>
                     <span className={`pill-badge ${getSeverityPillClass(attackA?.threatAssessment?.severity)}`}>
-                      {attackA?.threatAssessment?.severity || 'Unknown'}
+                      {attackA?.threatAssessment?.severity?.toUpperCase() || 'UNKNOWN'}
                     </span>
                   </td>
                   <td>
                     <span className={`pill-badge ${getSeverityPillClass(attackB?.threatAssessment?.severity)}`}>
-                      {attackB?.threatAssessment?.severity || 'Unknown'}
+                      {attackB?.threatAssessment?.severity?.toUpperCase() || 'UNKNOWN'}
                     </span>
                   </td>
                 </tr>
                 <tr>
                   <td>Risk Score</td>
-                  <td>{attackA?.threatAssessment?.riskScore !== null && attackA?.threatAssessment?.riskScore !== undefined ? `${attackA.threatAssessment.riskScore} / 100` : 'N/A'}</td>
-                  <td>{attackB?.threatAssessment?.riskScore !== null && attackB?.threatAssessment?.riskScore !== undefined ? `${attackB.threatAssessment.riskScore} / 100` : 'N/A'}</td>
+                  <td><strong>{attackA?.threatAssessment?.riskScore !== null && attackA?.threatAssessment?.riskScore !== undefined ? `${attackA.threatAssessment.riskScore} / 100` : 'N/A'}</strong></td>
+                  <td><strong>{attackB?.threatAssessment?.riskScore !== null && attackB?.threatAssessment?.riskScore !== undefined ? `${attackB.threatAssessment.riskScore} / 100` : 'N/A'}</strong></td>
                 </tr>
                 <tr>
                   <td>Confidence</td>
-                  <td>{attackA?.threatAssessment?.confidence || 0}%</td>
-                  <td>{attackB?.threatAssessment?.confidence || 0}%</td>
+                  <td>{attackA?.threatAssessment?.confidence !== undefined ? `${attackA.threatAssessment.confidence}%` : 'N/A'}</td>
+                  <td>{attackB?.threatAssessment?.confidence !== undefined ? `${attackB.threatAssessment.confidence}%` : 'N/A'}</td>
                 </tr>
                 <tr>
-                  <td>Delivery Vector</td>
-                  <td>{attackA?.attackDNA?.deliveryVector || attackA?.originalRequest?.sourceType || 'Not specified'}</td>
-                  <td>{attackB?.attackDNA?.deliveryVector || attackB?.originalRequest?.sourceType || 'Not specified'}</td>
+                  <td>Source Type</td>
+                  <td><span className="source-tag">{(attackA?.originalRequest?.sourceType || attackA?.sourceType || 'text').toUpperCase()}</span></td>
+                  <td><span className="source-tag">{(attackB?.originalRequest?.sourceType || attackB?.sourceType || 'text').toUpperCase()}</span></td>
                 </tr>
                 <tr>
-                  <td>Primary Objective</td>
-                  <td>{attackA?.attackerIntent?.primaryGoal || 'Not established'}</td>
-                  <td>{attackB?.attackerIntent?.primaryGoal || 'Not established'}</td>
+                  <td>Attacker Intent</td>
+                  <td>
+                    <div><strong>{attackA?.attackerIntent?.primaryGoal || 'Not established'}</strong></div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>{attackA?.attackerIntent?.description || ''}</div>
+                  </td>
+                  <td>
+                    <div><strong>{attackB?.attackerIntent?.primaryGoal || 'Not established'}</strong></div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>{attackB?.attackerIntent?.description || ''}</div>
+                  </td>
                 </tr>
                 <tr>
-                  <td>Evidence Count</td>
-                  <td>{(attackA?.evidence || []).length} items</td>
-                  <td>{(attackB?.evidence || []).length} items</td>
+                  <td>Attack DNA</td>
+                  <td>
+                    <div>Vector: <strong>{attackA?.attackDNA?.deliveryVector || 'Not specified'}</strong></div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Levers: {(attackA?.attackDNA?.psychologicalLevers || []).join(', ') || 'None'}</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Obfuscation: {(attackA?.attackDNA?.obfuscationTechniques || []).join(', ') || 'None'}</div>
+                  </td>
+                  <td>
+                    <div>Vector: <strong>{attackB?.attackDNA?.deliveryVector || 'Not specified'}</strong></div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Levers: {(attackB?.attackDNA?.psychologicalLevers || []).join(', ') || 'None'}</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Obfuscation: {(attackB?.attackDNA?.obfuscationTechniques || []).join(', ') || 'None'}</div>
+                  </td>
                 </tr>
                 <tr>
-                  <td>MITRE Status</td>
-                  <td>{attackA?.mitreAttack?.status || 'unmapped'}</td>
-                  <td>{attackB?.mitreAttack?.status || 'unmapped'}</td>
+                  <td>Evidence Breakdown</td>
+                  <td>
+                    <div>Total: <strong>{(attackA?.evidence || []).length} items</strong></div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      Tech: {(attackA?.evidence || []).filter((e: any) => e.category === 'technical').length} | 
+                      Psych: {(attackA?.evidence || []).filter((e: any) => e.category === 'psychological').length} | 
+                      Ctx: {(attackA?.evidence || []).filter((e: any) => e.category === 'contextual').length}
+                    </div>
+                  </td>
+                  <td>
+                    <div>Total: <strong>{(attackB?.evidence || []).length} items</strong></div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      Tech: {(attackB?.evidence || []).filter((e: any) => e.category === 'technical').length} | 
+                      Psych: {(attackB?.evidence || []).filter((e: any) => e.category === 'psychological').length} | 
+                      Ctx: {(attackB?.evidence || []).filter((e: any) => e.category === 'contextual').length}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Extracted IOCs</td>
+                  <td>
+                    <strong>{extractObservables(attackA?.evidence || [], attackA?.indicators || []).length} observables</strong>
+                  </td>
+                  <td>
+                    <strong>{extractObservables(attackB?.evidence || [], attackB?.indicators || []).length} observables</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <td>MITRE ATT&CK Techniques</td>
+                  <td>
+                    <div>Status: <strong>{attackA?.mitreAttack?.status || 'unmapped'}</strong></div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      {(attackA?.mitreAttack?.techniques || []).map((t: any) => t.techniqueId).join(', ') || 'None'}
+                    </div>
+                  </td>
+                  <td>
+                    <div>Status: <strong>{attackB?.mitreAttack?.status || 'unmapped'}</strong></div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      {(attackB?.mitreAttack?.techniques || []).map((t: any) => t.techniqueId).join(', ') || 'None'}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Victim Impact Assessment</td>
+                  <td>
+                    <div style={{ fontSize: '0.82rem' }}>
+                      {deriveVictimImpacts(attackA || {}, attackA?.evidence || [])
+                        .filter(i => i.isEstablished)
+                        .map(i => i.category)
+                        .join(', ') || 'None established'}
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ fontSize: '0.82rem' }}>
+                      {deriveVictimImpacts(attackB || {}, attackB?.evidence || [])
+                        .filter(i => i.isEstablished)
+                        .map(i => i.category)
+                        .join(', ') || 'None established'}
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -1938,19 +2124,22 @@ export default function Dashboard() {
             <div className="compare-insights-grid">
               <div className="insight-box box-shared">
                 <strong style={{ display: 'block', marginBottom: '0.4rem', color: '#065F46' }}>
-                  ✓ Shared Behavioral Attributes
+                  ✓ Shared Factual Attributes
                 </strong>
                 <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.82rem', color: '#047857' }}>
                   {attackA?.threatAssessment?.verdict === attackB?.threatAssessment?.verdict ? (
-                    <li>Both artifacts yielded an identical verdict ({attackA?.threatAssessment?.verdict}).</li>
+                    <li>Identical threat verdict: {attackA?.threatAssessment?.verdict?.toUpperCase()}.</li>
                   ) : null}
                   {attackA?.attackerIntent?.primaryGoal && attackA?.attackerIntent?.primaryGoal === attackB?.attackerIntent?.primaryGoal ? (
-                    <li>Shared attacker intent objective: {attackA.attackerIntent.primaryGoal}.</li>
+                    <li>Matching primary goal: {attackA.attackerIntent.primaryGoal}.</li>
                   ) : null}
-                  {attackA?.originalRequest?.sourceType === attackB?.originalRequest?.sourceType ? (
-                    <li>Identical source modality ({attackA?.originalRequest?.sourceType || 'artifact'}).</li>
+                  {(attackA?.originalRequest?.sourceType || attackA?.sourceType) === (attackB?.originalRequest?.sourceType || attackB?.sourceType) ? (
+                    <li>Shared source modality ({(attackA?.originalRequest?.sourceType || attackA?.sourceType || 'text').toUpperCase()}).</li>
                   ) : null}
-                  <li>Both investigations processed with deterministic forensic pipeline.</li>
+                  {attackA?.attackDNA?.deliveryVector && attackA?.attackDNA?.deliveryVector === attackB?.attackDNA?.deliveryVector ? (
+                    <li>Shared delivery vector: {attackA.attackDNA.deliveryVector}.</li>
+                  ) : null}
+                  <li>Both investigations evaluated under deterministic PhishForensics forensic pipeline.</li>
                 </ul>
               </div>
 
@@ -1960,12 +2149,16 @@ export default function Dashboard() {
                 </strong>
                 <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.82rem', color: '#1D4ED8' }}>
                   {attackA?.threatAssessment?.riskScore !== attackB?.threatAssessment?.riskScore ? (
-                    <li>Risk scores diverge: {attackA?.threatAssessment?.riskScore ?? 'N/A'} vs {attackB?.threatAssessment?.riskScore ?? 'N/A'}.</li>
+                    <li>Risk score differential: {attackA?.threatAssessment?.riskScore ?? 'N/A'} vs {attackB?.threatAssessment?.riskScore ?? 'N/A'} points.</li>
                   ) : null}
                   {attackA?.threatAssessment?.verdict !== attackB?.threatAssessment?.verdict ? (
-                    <li>Different threat verdicts: {attackA?.threatAssessment?.verdict} vs {attackB?.threatAssessment?.verdict}.</li>
+                    <li>Distinct threat verdicts: {attackA?.threatAssessment?.verdict?.toUpperCase() || 'UNKNOWN'} vs {attackB?.threatAssessment?.verdict?.toUpperCase() || 'UNKNOWN'}.</li>
                   ) : null}
-                  <li>Evidence count comparison: {(attackA?.evidence || []).length} vs {(attackB?.evidence || []).length} items.</li>
+                  {attackA?.threatAssessment?.severity !== attackB?.threatAssessment?.severity ? (
+                    <li>Severity levels differ: {attackA?.threatAssessment?.severity?.toUpperCase()} vs {attackB?.threatAssessment?.severity?.toUpperCase()}.</li>
+                  ) : null}
+                  <li>Evidence inventory comparison: {(attackA?.evidence || []).length} items vs {(attackB?.evidence || []).length} items.</li>
+                  <li>Extracted observables: {extractObservables(attackA?.evidence || [], attackA?.indicators || []).length} vs {extractObservables(attackB?.evidence || [], attackB?.indicators || []).length} indicators.</li>
                 </ul>
               </div>
             </div>

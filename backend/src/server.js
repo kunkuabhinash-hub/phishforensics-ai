@@ -3,7 +3,16 @@ const cors = require('cors');
 require('dotenv').config();
 
 const analyzeRoutes = require('./routes/analyzeRoutes');
+const investigationRoutes = require('./routes/investigationRoutes');
 const errorHandler = require('./middleware/errorHandler');
+const { initDatabase } = require('./db/database.ts');
+
+// Initialize SQLite database & migrations on startup
+try {
+  initDatabase();
+} catch (dbError) {
+  console.error('[Startup Warning] Database initialization error:', dbError);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +24,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
 app.use('/api/analyze', analyzeRoutes);
+app.use('/api/investigations', investigationRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({

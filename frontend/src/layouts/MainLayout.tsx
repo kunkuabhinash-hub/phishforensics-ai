@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import ForensicCursor from '../components/ForensicCursor';
+import InvestigationHistoryModal from '../components/InvestigationHistoryModal';
 
 export default function MainLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
 
   const navItems = [
     { label: 'PRODUCTS', id: 'products' },
@@ -38,6 +41,7 @@ export default function MainLayout() {
   return (
     <div className="layout-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <ForensicCursor />
+      <InvestigationHistoryModal isOpen={showHistoryModal} onClose={() => setShowHistoryModal(false)} />
       
       {/* ─── STICKY NAVIGATION ────────────────────────────────────────── */}
       <header 
@@ -80,26 +84,51 @@ export default function MainLayout() {
             ))}
           </nav>
 
-          {/* CTA */}
-          <a 
-            href="#analyze" 
-            onClick={handleAnalyzeClick}
-            style={{ 
-              padding: '0.5rem 1rem', 
-              backgroundColor: 'transparent', 
-              border: '1px solid var(--text-primary)', 
-              color: 'var(--text-primary)', 
-              fontFamily: 'var(--font-mono)', 
-              fontSize: '0.75rem', 
-              fontWeight: 600, 
-              borderRadius: 'var(--r-sm)',
-              textTransform: 'uppercase',
-              flexShrink: 0,
-              cursor: 'pointer'
-            }}
-          >
-            ANALYZE THREAT
-          </a>
+          {/* Actions & CTA */}
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <button
+              onClick={() => setShowHistoryModal(true)}
+              className="nav-link-item"
+              style={{
+                padding: '0.5rem 0.85rem',
+                backgroundColor: 'transparent',
+                border: '1px solid var(--border-light)',
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                borderRadius: 'var(--r-sm)',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}
+              type="button"
+              title="View stored investigation history in SQLite"
+            >
+              📁 HISTORY
+            </button>
+            <a 
+              href="#analyze" 
+              onClick={handleAnalyzeClick}
+              style={{ 
+                padding: '0.5rem 1rem', 
+                backgroundColor: 'transparent', 
+                border: '1px solid var(--text-primary)', 
+                color: 'var(--text-primary)', 
+                fontFamily: 'var(--font-mono)', 
+                fontSize: '0.75rem', 
+                fontWeight: 600, 
+                borderRadius: 'var(--r-sm)',
+                textTransform: 'uppercase',
+                flexShrink: 0,
+                cursor: 'pointer'
+              }}
+            >
+              ANALYZE THREAT
+            </a>
+          </div>
         </div>
       </header>
 

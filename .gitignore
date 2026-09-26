@@ -18,3 +18,13 @@ build/
 Thumbs.db
 .vscode/
 .idea/
+
+# SQLite Databases & Local Data
+backend/data/*.sqlite
+backend/data/*.sqlite3
+backend/data/*.db
+backend/data/
+*.sqlite
+*.sqlite3
+*.db
+

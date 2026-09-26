@@ -60,6 +60,14 @@ const analyzeUnifiedContent = async (req, res, next) => {
 
         const result = await AnalyzeService.processUnifiedContent(analysisId, normalizedInput);
         
+        // Persist to SQLite database (does not alter the analysis result)
+        try {
+            const { saveInvestigation } = require('../db/investigationRepository.ts');
+            saveInvestigation(result);
+        } catch (dbErr) {
+            console.error(`[Database Error] Failed to persist investigation ${analysisId}:`, dbErr.message);
+        }
+        
         return res.status(200).json(result);
 
     } catch (error) {

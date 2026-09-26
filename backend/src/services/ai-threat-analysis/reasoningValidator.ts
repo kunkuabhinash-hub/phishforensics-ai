@@ -84,18 +84,31 @@ export function validateAndMapReasoning(
     : null;
 
   // 1. suggestedVerdict: flat first, then summary.verdict, fallback 'unknown'
-  const resolvedVerdict = (typeof rawReasoning.suggestedVerdict === 'string' && rawReasoning.suggestedVerdict.trim())
+  const rawVerdict = ((typeof rawReasoning.suggestedVerdict === 'string' && rawReasoning.suggestedVerdict.trim())
     ? rawReasoning.suggestedVerdict
     : (summaryObj && typeof summaryObj.verdict === 'string' && summaryObj.verdict.trim()
       ? summaryObj.verdict
-      : 'unknown');
+      : 'unknown')).toLowerCase();
+
+  let resolvedVerdict: 'phishing' | 'suspicious' | 'safe' | 'unknown' = 'unknown';
+  if (rawVerdict === 'phishing' || rawVerdict === 'malicious') resolvedVerdict = 'phishing';
+  else if (rawVerdict === 'suspicious') resolvedVerdict = 'suspicious';
+  else if (rawVerdict === 'safe' || rawVerdict === 'benign') resolvedVerdict = 'safe';
+  else resolvedVerdict = 'unknown';
 
   // 2. suggestedSeverity: flat first, then summary.severity, fallback 'unknown'
-  const resolvedSeverity = (typeof rawReasoning.suggestedSeverity === 'string' && rawReasoning.suggestedSeverity.trim())
+  const rawSeverity = ((typeof rawReasoning.suggestedSeverity === 'string' && rawReasoning.suggestedSeverity.trim())
     ? rawReasoning.suggestedSeverity
     : (summaryObj && typeof summaryObj.severity === 'string' && summaryObj.severity.trim()
       ? summaryObj.severity
-      : 'unknown');
+      : 'unknown')).toLowerCase();
+
+  let resolvedSeverity: 'critical' | 'high' | 'medium' | 'low' | 'info' | 'unknown' = 'unknown';
+  if (['critical', 'high', 'medium', 'low', 'info'].includes(rawSeverity)) {
+    resolvedSeverity = rawSeverity as any;
+  } else {
+    resolvedSeverity = 'unknown';
+  }
 
   // 3. suggestedRiskScore: flat first, then summary.riskScore
   const rawRiskVal = typeof rawReasoning.suggestedRiskScore === 'number'

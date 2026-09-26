@@ -207,14 +207,16 @@ button {
   text-transform: uppercase;
   font-size: 0.875rem;
   border-radius: var(--r-sm);
-  transition: all 0.3s var(--ease-editorial);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
   border: 1px solid var(--text-primary);
+  will-change: transform;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: transparent;
   color: var(--text-primary);
-  transform: translateY(-2px);
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(17, 24, 39, 0.08);
 }
 
 .section-navy .btn-primary {
@@ -223,9 +225,10 @@ button {
   border-color: var(--bg-pure-white);
 }
 
-.section-navy .btn-primary:hover {
+.section-navy .btn-primary:hover:not(:disabled) {
   background-color: transparent;
   color: var(--bg-pure-white);
+  transform: scale(1.03);
 }
 
 .btn-secondary {
@@ -241,12 +244,14 @@ button {
   font-size: 0.875rem;
   border-radius: var(--r-sm);
   border: 1px solid var(--border-strong);
-  transition: all 0.3s var(--ease-editorial);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease, box-shadow 0.18s ease;
+  will-change: transform;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   border-color: var(--text-primary);
-  transform: translateY(-2px);
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(17, 24, 39, 0.06);
 }
 
 .divider {
@@ -304,3 +309,588 @@ textarea.input-field {
   resize: vertical;
   min-height: 120px;
 }
+
+/* ─── THREAT INPUT & FILE UPLOAD SYSTEM ─────────────────────────────────── */
+
+.mode-toggle-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 0.75rem;
+}
+
+.mode-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--border-light);
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mode-toggle-btn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.mode-toggle-btn.active {
+  background-color: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg-pure-white);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+}
+
+.subtypes-group {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.subtype-btn {
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--border-light);
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.subtype-btn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.subtype-btn.active {
+  background-color: var(--bg-light);
+  border-color: var(--blue-primary);
+  color: var(--blue-primary);
+  font-weight: 700;
+}
+
+/* Upload Dropzone Container */
+.upload-dropzone {
+  border: 2px dashed #CBD5E1;
+  border-radius: var(--r-md);
+  background-color: var(--bg-warm-white);
+  padding: 1.75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  min-height: 180px;
+  position: relative;
+}
+
+.upload-dropzone.drag-active {
+  border-color: var(--blue-primary);
+  background-color: #EFF6FF;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.upload-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  color: var(--blue-primary);
+}
+
+.upload-label-title {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.upload-label-sub {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.btn-add-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--bg-pure-white);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.65rem 1.4rem;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.18s ease,
+              box-shadow 0.18s ease,
+              background-color 0.18s ease;
+}
+
+.btn-add-file:hover {
+  transform: scale(1.05);
+  border-color: var(--blue-primary);
+  color: var(--blue-primary);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+}
+
+.btn-add-file:focus-visible {
+  outline: 2px solid var(--blue-primary);
+  outline-offset: 2px;
+}
+
+.upload-format-chips {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* Upload Preview Card */
+.upload-preview-container {
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-md);
+  background-color: var(--bg-warm-white);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.preview-media-box {
+  background: #0F172A;
+  border-radius: var(--r-sm);
+  padding: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 180px;
+  overflow: hidden;
+}
+
+.preview-thumbnail {
+  max-width: 100%;
+  max-height: 160px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.preview-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.preview-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  overflow: hidden;
+}
+
+.preview-filename {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 250px;
+}
+
+.preview-filesize {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.preview-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-preview-action {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid var(--border-light);
+  background: var(--bg-pure-white);
+  color: var(--text-secondary);
+}
+
+.btn-preview-action:hover {
+  transform: scale(1.04);
+}
+
+.btn-preview-action.btn-replace:hover {
+  border-color: var(--blue-primary);
+  color: var(--blue-primary);
+}
+
+.btn-preview-action.btn-remove:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: #FFF1F2;
+}
+
+/* ─── CUSTOM FORENSIC CURSOR SYSTEM ─────────────────────────────────────── */
+
+@media (hover: hover) and (pointer: fine) {
+  body.forensic-cursor-enabled,
+  body.forensic-cursor-enabled a,
+  body.forensic-cursor-enabled button,
+  body.forensic-cursor-enabled [role="button"],
+  body.forensic-cursor-enabled select,
+  body.forensic-cursor-enabled .clickable-evidence-ref,
+  body.forensic-cursor-enabled .tactic-link-badge,
+  body.forensic-cursor-enabled .btn-header-action,
+  body.forensic-cursor-enabled .filter-btn,
+  body.forensic-cursor-enabled .btn-ioc-action,
+  body.forensic-cursor-enabled .sim-tab-btn,
+  body.forensic-cursor-enabled .sim-control-btn,
+  body.forensic-cursor-enabled .nav-back-button {
+    cursor: none !important;
+  }
+
+  /* Preserve native OS text cursor for inputs and text selection */
+  body.forensic-cursor-enabled input,
+  body.forensic-cursor-enabled textarea,
+  body.forensic-cursor-enabled [contenteditable],
+  body.forensic-cursor-enabled .input-field {
+    cursor: text !important;
+  }
+
+  /* Preserve native OS disabled cursor */
+  body.forensic-cursor-enabled button:disabled,
+  body.forensic-cursor-enabled input:disabled,
+  body.forensic-cursor-enabled select:disabled,
+  body.forensic-cursor-enabled [aria-disabled="true"],
+  body.forensic-cursor-enabled .cursor-disabled {
+    cursor: not-allowed !important;
+  }
+}
+
+/* ─── INTERACTIVE HOVER MAGNIFICATION ────────────────────────────────────── */
+
+@media (hover: hover) and (pointer: fine) {
+  /* 1. BUTTONS & PRIMARY CONTROLS (Scale ~1.05x) */
+  .btn-primary,
+  .btn-secondary,
+  .btn-primary-large,
+  .btn-header-action,
+  .nav-back-button,
+  .btn-close-feature-panel,
+  .btn-ioc-action,
+  .filter-btn,
+  .clickable-evidence-ref,
+  .sim-control-btn,
+  .tactic-link-badge,
+  .dropdown-menu-item,
+  .btn-add-file {
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.18s ease,
+                border-color 0.18s ease,
+                color 0.18s ease,
+                box-shadow 0.18s ease !important;
+    will-change: transform;
+    transform-origin: center center;
+  }
+
+  .btn-primary:hover:not(:disabled),
+  .btn-secondary:hover:not(:disabled),
+  .btn-primary-large:hover:not(:disabled),
+  .btn-header-action:hover:not(:disabled),
+  .nav-back-button:hover:not(:disabled),
+  .btn-close-feature-panel:hover:not(:disabled),
+  .btn-ioc-action:hover:not(:disabled),
+  .filter-btn:hover:not(:disabled),
+  .clickable-evidence-ref:hover,
+  .sim-control-btn:hover:not(:disabled),
+  .tactic-link-badge:hover,
+  .dropdown-menu-item:hover,
+  .btn-add-file:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(37, 99, 235, 0.2) !important;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* 2. NAVIGATION LINKS & BRAND (Scale ~1.04x) */
+  .nav-link-item a,
+  .nav-link-item button,
+  .nav-link-item,
+  .nav-brand {
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.18s ease !important;
+    display: inline-block;
+    will-change: transform;
+    transform-origin: center center;
+  }
+
+  .nav-link-item a:hover,
+  .nav-link-item button:hover,
+  .nav-brand:hover {
+    transform: scale(1.04) !important;
+    position: relative;
+    z-index: 8;
+  }
+
+  /* 3. INVESTIGATION FEATURE CARDS (Scale ~1.045x) */
+  .feature-card-btn {
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.18s ease,
+                box-shadow 0.18s ease,
+                background-color 0.18s ease !important;
+    will-change: transform;
+    transform-origin: center center;
+  }
+
+  .feature-card-btn:hover {
+    transform: scale(1.045) !important;
+    border-color: var(--blue-primary) !important;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.14), 0 0 0 1px rgba(37, 99, 235, 0.22) !important;
+    position: relative;
+    z-index: 7;
+  }
+
+  /* 4. INTERACTIVE ANALYSIS CARDS & FORENSIC MODULES (Scale ~1.035x) */
+  .evidence-item-card,
+  .ioc-item-card,
+  .impact-card,
+  .fingerprint-meta-item,
+  .exec-finding-box,
+  .guidance-item-card,
+  .insight-box,
+  .export-action-card,
+  .metric-box-card,
+  .hover-magnify,
+  .hover-magnify-card {
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.18s ease,
+                border-color 0.18s ease !important;
+    will-change: transform;
+    transform-origin: center center;
+  }
+
+  .evidence-item-card:hover,
+  .ioc-item-card:hover,
+  .impact-card:hover,
+  .fingerprint-meta-item:hover,
+  .exec-finding-box:hover,
+  .guidance-item-card:hover,
+  .insight-box:hover,
+  .export-action-card:hover,
+  .metric-box-card:hover,
+  .hover-magnify:hover,
+  .hover-magnify-card:hover {
+    transform: scale(1.035) !important;
+    border-color: #93C5FD !important;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(37, 99, 235, 0.18) !important;
+    z-index: 5;
+    position: relative;
+  }
+
+  /* 5. MITRE ATT&CK & PROGRESSION TIMELINE (Scale ~1.03x) */
+  .mitre-primary-card,
+  .stepper-node,
+  .sim-active-stage-card {
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.18s ease,
+                box-shadow 0.18s ease !important;
+    will-change: transform;
+    transform-origin: center center;
+  }
+
+  .mitre-primary-card:hover {
+    transform: scale(1.03) !important;
+    border-color: var(--blue-primary) !important;
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.12) !important;
+    position: relative;
+    z-index: 6;
+  }
+
+  .stepper-node:hover {
+    transform: scale(1.03) !important;
+    position: relative;
+    z-index: 5;
+  }
+
+  .sim-active-stage-card:hover {
+    transform: scale(1.025) !important;
+    border-color: #93C5FD !important;
+    position: relative;
+    z-index: 5;
+  }
+
+  /* 6. DNA TRAIT PILLS (Scale ~1.04x) */
+  .dna-trait-pill {
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.18s ease,
+                background-color 0.18s ease !important;
+    will-change: transform;
+    transform-origin: center center;
+  }
+
+  .dna-trait-pill:hover {
+    transform: scale(1.04) !important;
+    border-color: #93C5FD !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15) !important;
+    z-index: 5;
+    position: relative;
+  }
+
+  /* 7. IMPORTANT DASHBOARD CONTROLS (Scale ~1.04x - 1.045x) */
+  .sim-tab-btn,
+  .btn-close-feature-panel-bottom,
+  .evidence-preview-toggle,
+  .mode-toggle-btn,
+  .subtype-btn,
+  .btn-preview-action {
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.18s ease,
+                border-color 0.18s ease,
+                background-color 0.18s ease !important;
+    will-change: transform;
+    transform-origin: center center;
+  }
+
+  .sim-tab-btn:hover:not(:disabled),
+  .btn-close-feature-panel-bottom:hover,
+  .evidence-preview-toggle:hover,
+  .mode-toggle-btn:hover,
+  .subtype-btn:hover,
+  .btn-preview-action:hover {
+    transform: scale(1.04) !important;
+    position: relative;
+    z-index: 6;
+  }
+
+  /* Disabled controls remain static without magnification */
+  button:disabled,
+  .btn-primary:disabled,
+  .btn-primary-large:disabled,
+  .sim-control-btn:disabled,
+  .sim-tab-btn:disabled,
+  [aria-disabled="true"] {
+    transform: none !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ─── ACCESSIBILITY: REDUCED MOTION ──────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-magnify,
+  .hover-magnify-card,
+  .evidence-item-card,
+  .ioc-item-card,
+  .dna-trait-pill,
+  .fingerprint-meta-item,
+  .impact-card,
+  .exec-finding-box,
+  .mitre-primary-card,
+  .guidance-item-card,
+  .insight-box,
+  .stepper-node,
+  .sim-active-stage-card,
+  .export-action-card,
+  .metric-box-card,
+  .feature-card-btn,
+  .btn-primary,
+  .btn-secondary,
+  .btn-primary-large,
+  .btn-header-action,
+  .filter-btn,
+  .btn-ioc-action,
+  .clickable-evidence-ref,
+  .sim-tab-btn,
+  .sim-control-btn,
+  .tactic-link-badge,
+  .nav-back-button,
+  .btn-add-file,
+  .mode-toggle-btn,
+  .subtype-btn,
+  .btn-preview-action,
+  .nav-link-item a,
+  .nav-link-item button,
+  .nav-brand {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ─── HEADER NAVIGATION STYLES ───────────────────────────────────────────── */
+
+.nav-link-item {
+  position: relative;
+  padding: 0.25rem 0;
+}
+
+.nav-link-item:hover {
+  color: var(--blue-primary) !important;
+}
+
+@media (max-width: 900px) {
+  .main-nav-links {
+    gap: 1.25rem !important;
+  }
+  .nav-link-item {
+    font-size: 0.7rem !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .header-nav-container {
+    flex-wrap: wrap !important;
+    gap: 0.75rem !important;
+    padding: 0.35rem 0 !important;
+  }
+  .main-nav-links {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.5rem !important;
+    overflow-x: auto;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--border-light);
+  }
+  .nav-link-item {
+    font-size: 0.68rem !important;
+    white-space: nowrap;
+  }
+}
+
+

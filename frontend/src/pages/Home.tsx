@@ -1,25 +1,109 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import type { AnalysisRequest, AnalysisResponse } from '../types';
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export default function Home() {
   const navigate = useNavigate();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [inputType, setInputType] = useState<'url' | 'text' | 'image'>('url');
+
+  // Input Mode: 'text' or 'image'
+  const [inputMode, setInputMode] = useState<'text' | 'image'>('text');
+  const [textSubtype, setTextSubtype] = useState<'email' | 'url' | 'text'>('email');
   const [inputValue, setInputValue] = useState('');
+  
+  // File upload state
+  const [uploadedFile, setUploadedFile] = useState<{
+    file: File;
+    name: string;
+    size: number;
+    dataUrl: string;
+  } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Handle smooth scroll when navigating to hash sections
+  useEffect(() => {
+    const handleHashScroll = () => {
+      if (window.location.hash) {
+        const id = window.location.hash.replace('#', '');
+        const el = document.getElementById(id);
+        if (el) {
+          setTimeout(() => {
+            el.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }
+      }
+    };
+
+    handleHashScroll();
+    window.addEventListener('hashchange', handleHashScroll);
+    return () => window.removeEventListener('hashchange', handleHashScroll);
+  }, []);
+
+  const validateAndProcessFile = (file: File) => {
+    setError(null);
+    const validExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
+    const validMimes = ['image/png', 'image/jpeg', 'image/webp'];
+
+    const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+    const isValidType = validMimes.includes(file.type.toLowerCase()) || validExtensions.includes(extension);
+
+    if (!isValidType) {
+      setError('Unsupported file type. Please upload PNG, JPG, JPEG, or WEBP.');
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024; // 10MB limit
+    if (file.size > maxSize) {
+      setError('File size exceeds 10MB limit. Please upload a smaller image.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setUploadedFile({
+        file,
+        name: file.name,
+        size: file.size,
+        dataUrl
+      });
+    };
+    reader.onerror = () => {
+      setError('Failed to read file. Please select another image.');
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue) return;
+
+    if (inputMode === 'text') {
+      if (!inputValue.trim()) {
+        setError('Please enter text, an email, or a URL to analyze.');
+        return;
+      }
+    } else {
+      if (!uploadedFile) {
+        setError('Please upload an image artifact before analyzing.');
+        return;
+      }
+    }
 
     setIsAnalyzing(true);
     setError(null);
 
     const req: AnalysisRequest = {
-      type: inputType,
-      content: inputValue
+      type: inputMode === 'text' ? textSubtype : 'image',
+      content: inputMode === 'text' ? inputValue.trim() : uploadedFile!.dataUrl
     };
 
     try {
@@ -31,11 +115,13 @@ export default function Home() {
     }
   };
 
+  const isSubmitDisabled = isAnalyzing || (inputMode === 'text' ? !inputValue.trim() : !uploadedFile);
+
   return (
     <div className="home-wrapper">
       
-      {/* ─── 01 HERO ──────────────────────────────────────────────────────── */}
-      <section className="section section-light" style={{ minHeight: '90vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      {/* ─── 00 HERO / ANALYZE FORM ────────────────────────────────────────── */}
+      <section id="analyze" className="section section-light" style={{ minHeight: '90vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', scrollMarginTop: '80px' }}>
         <div className="container">
           <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '4rem', alignItems: 'center' }}>
             <div className="hero-content" style={{ opacity: 0 }} ref={el => { if (el) el.classList.add('animate-fade-up'); }}>
@@ -58,37 +144,175 @@ export default function Home() {
                 understandable security lesson.
               </p>
               
-              <form onSubmit={handleAnalyze} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '500px', backgroundColor: 'var(--bg-white)', padding: '2rem', border: '1px solid var(--border-light)', borderRadius: 'var(--r-md)' }}>
-                <p className="mono-label" style={{ color: 'var(--text-primary)' }}>START AN INVESTIGATION</p>
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.5rem' }}>
-                  {['url', 'text', 'image'].map((type) => (
-                    <button 
-                      key={type}
-                      type="button" 
-                      onClick={() => setInputType(type as any)}
-                      style={{ 
-                        padding: '0.5rem 1rem', 
-                        border: `1px solid ${inputType === type ? 'var(--text-primary)' : 'var(--border-light)'}`,
-                        backgroundColor: inputType === type ? 'var(--text-primary)' : 'transparent',
-                        color: inputType === type ? 'var(--bg-pure-white)' : 'var(--text-secondary)',
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.75rem',
-                        borderRadius: 'var(--r-sm)'
-                      }}
-                    >
-                      {type.replace('_', ' ').toUpperCase()}
-                    </button>
-                  ))}
+              <form onSubmit={handleAnalyze} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '520px', backgroundColor: 'var(--bg-white)', padding: '2rem', border: '1px solid var(--border-light)', borderRadius: 'var(--r-md)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <p className="mono-label" style={{ color: 'var(--text-primary)', margin: 0 }}>START AN INVESTIGATION</p>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-muted)' }}>PASSIVE ONLY</span>
                 </div>
-                <textarea 
-                  className="input-field" 
-                  placeholder={`Enter suspicious ${inputType.replace('_', ' ')} here...`}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  style={{ minHeight: '100px' }}
-                />
-                {error && <p style={{ color: 'var(--danger)', fontSize: '0.875rem' }}>{error}</p>}
-                <button type="submit" className="btn-primary" disabled={isAnalyzing}>
+
+                {/* Mode Selector: [ TEXT ] vs [ IMAGE / FILE ] */}
+                <div className="mode-toggle-group" role="tablist" aria-label="Input Mode Selector">
+                  <button
+                    type="button"
+                    className={`mode-toggle-btn ${inputMode === 'text' ? 'active' : ''}`}
+                    onClick={() => { setInputMode('text'); setError(null); }}
+                    role="tab"
+                    aria-selected={inputMode === 'text'}
+                  >
+                    📝 TEXT
+                  </button>
+                  <button
+                    type="button"
+                    className={`mode-toggle-btn ${inputMode === 'image' ? 'active' : ''}`}
+                    onClick={() => { setInputMode('image'); setError(null); }}
+                    role="tab"
+                    aria-selected={inputMode === 'image'}
+                  >
+                    🖼 IMAGE / FILE
+                  </button>
+                </div>
+
+                {/* TEXT MODE */}
+                {inputMode === 'text' && (
+                  <div>
+                    <div className="subtypes-group">
+                      {(['email', 'url', 'text'] as const).map((sub) => (
+                        <button 
+                          key={sub}
+                          type="button" 
+                          className={`subtype-btn ${textSubtype === sub ? 'active' : ''}`}
+                          onClick={() => setTextSubtype(sub)}
+                        >
+                          {sub.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+
+                    <textarea 
+                      className="input-field" 
+                      placeholder={`Enter suspicious ${textSubtype} here...`}
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      style={{ minHeight: '120px' }}
+                    />
+                  </div>
+                )}
+
+                {/* IMAGE / FILE MODE */}
+                {inputMode === 'image' && (
+                  <div>
+                    {!uploadedFile ? (
+                      <div 
+                        className={`upload-dropzone ${isDragging ? 'drag-active' : ''}`}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setIsDragging(true);
+                        }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setIsDragging(false);
+                          const files = e.dataTransfer.files;
+                          if (files && files.length > 0) {
+                            validateAndProcessFile(files[0]);
+                          }
+                        }}
+                      >
+                        <div className="upload-icon-circle">⤓</div>
+                        <div>
+                          <p className="upload-label-title">UPLOAD EVIDENCE</p>
+                          <p className="upload-label-sub" style={{ marginTop: '0.25rem' }}>
+                            {isDragging ? 'Drop file to upload' : 'Drag & drop an image here'}
+                          </p>
+                        </div>
+                        
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>or</span>
+
+                        <button
+                          type="button"
+                          className="btn-add-file"
+                          onClick={() => fileInputRef.current?.click()}
+                          aria-label="Add file or image for forensic analysis"
+                        >
+                          + ADD FILE
+                        </button>
+
+                        <div className="upload-format-chips">
+                          PNG • JPG • JPEG • WEBP (Max 10MB)
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="upload-preview-container">
+                        <div className="preview-media-box">
+                          <img 
+                            src={uploadedFile.dataUrl} 
+                            alt={uploadedFile.name} 
+                            className="preview-thumbnail" 
+                          />
+                        </div>
+
+                        <div className="preview-info-row">
+                          <div className="preview-meta">
+                            <span className="preview-filename" title={uploadedFile.name}>
+                              {uploadedFile.name}
+                            </span>
+                            <span className="preview-filesize">
+                              {formatFileSize(uploadedFile.size)}
+                            </span>
+                          </div>
+
+                          <div className="preview-actions-group">
+                            <button
+                              type="button"
+                              className="btn-preview-action btn-replace"
+                              onClick={() => fileInputRef.current?.click()}
+                              aria-label="Replace selected file"
+                            >
+                              [ REPLACE ]
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-preview-action btn-remove"
+                              onClick={() => {
+                                setUploadedFile(null);
+                                if (fileInputRef.current) fileInputRef.current.value = '';
+                              }}
+                              aria-label="Remove selected file"
+                            >
+                              [ REMOVE ]
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Native Hidden File Input */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const files = e.target.files;
+                        if (files && files.length > 0) {
+                          validateAndProcessFile(files[0]);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+
+                {error && (
+                  <div style={{ padding: '0.6rem 0.85rem', background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 'var(--r-sm)', color: 'var(--danger)', fontSize: '0.82rem', fontFamily: 'var(--font-mono)' }}>
+                    ⚠ {error}
+                  </div>
+                )}
+
+                <button 
+                  type="submit" 
+                  className="btn-primary" 
+                  disabled={isSubmitDisabled}
+                >
                   {isAnalyzing ? 'ANALYZING...' : 'ANALYZE THREAT →'}
                 </button>
               </form>
@@ -152,33 +376,71 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── 01 / PROJECT INTRODUCTION ─────────────────────────────────────── */}
-      <section className="section section-white">
+      {/* ─── 01 / WHY US? ─────────────────────────────────────────────────── */}
+      <section id="why-us" className="section section-white" style={{ scrollMarginTop: '80px' }}>
         <div className="container">
-          <p className="mono-label" style={{ marginBottom: '2rem' }}>01 / WHY PHISHFORENSICS?</p>
+          <p className="mono-label" style={{ marginBottom: '1.5rem', color: 'var(--blue-primary)' }}>01 / WHY US?</p>
           <div className="grid-2">
             <div>
-              <h2 className="section-title" style={{ maxWidth: '15ch' }}>
-                PHISHING IS NO LONGER JUST A SUSPICIOUS LINK.
+              <h2 className="section-title" style={{ maxWidth: '16ch' }}>
+                BEYOND DETECTION.<br/>
+                TRANSPARENT FORENSIC<br/>
+                INTELLIGENCE.
               </h2>
+              <p className="editorial-body" style={{ marginTop: '1.5rem' }}>
+                Legacy security gateways provide opaque binary verdicts. PhishForensics AI was built on the principle that modern defense requires knowing <em>how</em> an attack works, <em>what</em> it targeted, and <em>why</em> the verdict was reached.
+              </p>
             </div>
             <div>
-              <p className="editorial-body" style={{ marginBottom: '2rem' }}>
-                Modern phishing attacks combine social engineering,
-                impersonation, urgency, malicious infrastructure,
-                credential harvesting, and psychological manipulation.
-              </p>
-              <p className="editorial-body" style={{ marginBottom: '3rem' }}>
-                A simple "safe / malicious" verdict does not tell the
-                whole story. PhishForensics AI is designed to investigate the attack
-                behind the message.
-              </p>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {['DETECT', 'UNDERSTAND', 'RECONSTRUCT', 'EDUCATE'].map((word, idx) => (
-                  <h3 key={idx} style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem', opacity: 0, animationDelay: `${idx * 100}ms` }} ref={el => { if (el) el.classList.add('animate-fade-up'); }}>
-                    {word}
-                  </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+                {[
+                  {
+                    title: 'Goes Beyond Simple Phishing Detection',
+                    desc: 'Evaluates attacker intent, delivery vectors, and potential victim impact rather than returning a plain yes/no.'
+                  },
+                  {
+                    title: 'Evidence-Driven Investigation',
+                    desc: 'Every verdict is directly supported by isolated technical, psychological, and contextual observables.'
+                  },
+                  {
+                    title: 'Attack DNA Behavioral Fingerprinting',
+                    desc: 'Measures behavioral traits, urgency triggers, and social engineering patterns as a structured product-specific fingerprint.'
+                  },
+                  {
+                    title: 'Attack Flow Reconstruction',
+                    desc: 'Reconstructs the chronological progression of the adversary across discrete stages from trust-building to compromise.'
+                  },
+                  {
+                    title: 'Safe Simulation Walkthrough',
+                    desc: 'Demonstrates hypothetical attack consequences safely in a sandbox without executing real code or opening live URLs.'
+                  },
+                  {
+                    title: 'Deterministic MITRE ATT&CK Mapping',
+                    desc: 'Maps verified techniques strictly from extracted evidence, never guessing or fabricating external taxonomies.'
+                  },
+                  {
+                    title: 'Explainable Investigation Results',
+                    desc: 'Provides analyst-ready analytical justifications and genuine confidence metrics for full forensic auditability.'
+                  }
+                ].map((item, idx) => (
+                  <div 
+                    key={idx} 
+                    className="hover-magnify-card" 
+                    style={{ 
+                      padding: '1.15rem 1.25rem', 
+                      backgroundColor: 'var(--bg-primary)', 
+                      border: '1px solid var(--border-light)', 
+                      borderRadius: 'var(--r-sm)' 
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem' }}>
+                      <span style={{ color: 'var(--blue-primary)', fontWeight: 800 }}>✓</span>
+                      <strong style={{ fontSize: '0.92rem', color: 'var(--text-primary)' }}>{item.title}</strong>
+                    </div>
+                    <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                      {item.desc}
+                    </p>
+                  </div>
                 ))}
               </div>
             </div>
@@ -186,60 +448,40 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── 02 / THE DIFFERENCE ────────────────────────────────────────────── */}
-      <section className="section section-light">
+      {/* ─── 02 / HOW IT WORKS ────────────────────────────────────────────── */}
+      <section id="how-it-works" className="section section-light" style={{ scrollMarginTop: '80px' }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', gap: '4rem', alignItems: 'start' }}>
-            <div style={{ paddingRight: '2rem' }}>
-              <p className="mono-label" style={{ marginBottom: '2rem' }}>TRADITIONAL DETECTION</p>
-              <h3 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', fontWeight: 700 }}>"IS THIS PHISHING?"</h3>
-              <p className="editorial-body">
-                Traditional detection can identify suspicious indicators
-                and provide a binary verdict. It stops at telling you whether something is safe or malicious.
-              </p>
-            </div>
-            <div className="divider" style={{ height: '100%' }}></div>
-            <div style={{ paddingLeft: '2rem' }}>
-              <p className="mono-label" style={{ marginBottom: '2rem' }}>PHISHFORENSICS AI</p>
-              <h3 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', fontWeight: 700, color: 'var(--blue-primary)' }}>"HOW DID THIS ATTACK WORK?"</h3>
-              <p className="editorial-body" style={{ marginBottom: '1.5rem' }}>
-                PhishForensics goes beyond detection by examining:
-              </p>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {['attacker intent', 'social engineering', 'evidence', 'behavioral signals', 'Attack DNA', 'attack sequence', 'likely consequences', 'user education'].map((item, idx) => (
-                  <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: '4px', height: '4px', backgroundColor: 'var(--text-primary)', borderRadius: '50%' }}></div>
-                    <span style={{ fontSize: '1.125rem', color: 'var(--text-secondary)' }}>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 03 / THE FORENSIC PIPELINE ────────────────────────────────────── */}
-      <section className="section section-white">
-        <div className="container">
-          <p className="mono-label" style={{ marginBottom: '2rem' }}>02 / THE FORENSIC PIPELINE</p>
-          <h2 className="section-title" style={{ maxWidth: '20ch', marginBottom: '5rem' }}>
+          <p className="mono-label" style={{ marginBottom: '1.5rem', color: 'var(--blue-primary)' }}>02 / HOW IT WORKS</p>
+          <h2 className="section-title" style={{ maxWidth: '24ch', marginBottom: '4rem' }}>
             FROM A SUSPICIOUS MESSAGE TO AN ATTACK STORY.
           </h2>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', flexWrap: 'wrap', gap: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', flexWrap: 'wrap', gap: '1.5rem' }}>
             <div style={{ position: 'absolute', top: '24px', left: 0, right: 0, height: '1px', backgroundColor: 'var(--border-light)', zIndex: 0, display: 'none' }} className="desktop-line"></div>
             
             {[
-              { num: '01', title: 'INPUT', desc: 'Suspicious email, URL, message, or artifact.' },
-              { num: '02', title: 'ANALYSIS', desc: 'AI extracts indicators and behavioral signals.' },
-              { num: '03', title: 'ATTACK DNA', desc: 'Signals become a structured attacker fingerprint.' },
-              { num: '04', title: 'RECONSTRUCTION', desc: 'The likely attack sequence is reconstructed.' },
-              { num: '05', title: 'EDUCATION', desc: 'The user learns what happened and what to look for next.' }
+              { num: '01', title: 'INPUT ARTIFACT', desc: 'Submit suspicious email text, headers, URL, or image artifact for automated intake.' },
+              { num: '02', title: 'AI & HEURISTIC ANALYSIS', desc: 'Extracts observable indicators, evaluates psychological pretexts, and scores risk.' },
+              { num: '03', title: 'ATTACK DNA GENERATION', desc: 'Synthesizes observable traits into a structured, multi-dimensional behavioral fingerprint.' },
+              { num: '04', title: 'ATTACK RECONSTRUCTION', desc: 'Reconstructs the adversary\'s staged mechanics from initial lure to credential collection.' },
+              { num: '05', title: 'DEFENSIVE GUIDANCE', desc: 'Actionable countermeasures, MITRE mappings, and safe simulation educate the analyst.' }
             ].map((step, idx) => (
-              <div key={idx} style={{ flex: '1 1 200px', position: 'relative', zIndex: 1, backgroundColor: 'var(--bg-pure-white)', paddingRight: '1rem' }}>
-                <p style={{ fontSize: '3rem', fontWeight: 800, color: 'var(--border-strong)', lineHeight: 1, marginBottom: '1rem' }}>{step.num}</p>
-                <h4 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>{step.title}</h4>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>{step.desc}</p>
+              <div 
+                key={idx} 
+                className="hover-magnify-card" 
+                style={{ 
+                  flex: '1 1 200px', 
+                  position: 'relative', 
+                  zIndex: 1, 
+                  backgroundColor: 'var(--bg-pure-white)', 
+                  padding: '1.5rem',
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--r-sm)'
+                }}
+              >
+                <p style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--blue-primary)', lineHeight: 1, marginBottom: '0.85rem' }}>{step.num}</p>
+                <h4 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: 700 }}>{step.title}</h4>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.55 }}>{step.desc}</p>
               </div>
             ))}
           </div>
@@ -357,29 +599,129 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── 07 / CAPABILITIES ────────────────────────────────────────────── */}
-      <section className="section section-white">
+      {/* ─── 03 / PRODUCTS ────────────────────────────────────────────────── */}
+      <section id="products" className="section section-white" style={{ scrollMarginTop: '80px' }}>
         <div className="container">
-          <h2 className="section-title" style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            ONE INVESTIGATION.<br/>
-            A COMPLETE FORENSIC STORY.
+          <p className="mono-label" style={{ marginBottom: '1.5rem', color: 'var(--blue-primary)' }}>03 / PRODUCTS</p>
+          <h2 className="section-title" style={{ maxWidth: '24ch', marginBottom: '1.5rem' }}>
+            THE FORENSIC INVESTIGATION SUITE.
           </h2>
+          <p className="editorial-body" style={{ marginBottom: '3.5rem' }}>
+            Seven purpose-built analytical modules engineered into a single unified threat investigation pipeline.
+          </p>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '3rem 2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
             {[
-              { num: '01', title: 'THREAT VERDICT', desc: 'High-confidence binary classification of the threat level.' },
-              { num: '02', title: 'EVIDENCE', desc: 'Transparent extraction of the technical indicators of compromise.' },
-              { num: '03', title: 'ATTACK INTENT', desc: 'Determining what the attacker is ultimately trying to achieve.' },
-              { num: '04', title: 'ATTACK DNA', desc: 'A dimensional analysis of the psychological manipulation.' },
-              { num: '05', title: 'ATTACK RECONSTRUCTION', desc: 'A step-by-step timeline of the likely attack chain.' },
-              { num: '06', title: 'SECURITY RECOMMENDATIONS', desc: 'Actionable steps to remediate and prevent similar attacks.' }
+              { 
+                num: '01', 
+                title: 'THREAT INVESTIGATION', 
+                desc: 'Unified multi-signal classification engine delivering verified threat verdicts, severity classification, numerical risk scores, and analytical justifications.' 
+              },
+              { 
+                num: '02', 
+                title: 'ATTACK DNA FINGERPRINT', 
+                desc: 'Structured behavioral fingerprint quantifying psychological manipulation tactics, urgency drivers, authority pretexts, and observed attacker complexity.' 
+              },
+              { 
+                num: '03', 
+                title: 'ATTACK RECONSTRUCTION', 
+                desc: 'Chronological timeline sequencing the attack chain across discrete operational stages, from initial trust-building to credential collection.' 
+              },
+              { 
+                num: '04', 
+                title: 'SAFE SIMULATION', 
+                desc: 'Sandboxed educational walkthrough demonstrating hypothetical consequences step-by-step without executing dangerous code or opening live links.' 
+              },
+              { 
+                num: '05', 
+                title: 'MITRE ATT&CK® MAPPING', 
+                desc: 'Deterministic evidence-driven mapping to verified enterprise techniques (e.g., T1566 Spearphishing Link/Attachment) with clickable evidence cross-references.' 
+              },
+              { 
+                num: '06', 
+                title: 'FORENSIC EVIDENCE MATRIX', 
+                desc: 'Granular isolation of technical, psychological, and contextual evidence signals accompanied by genuine confidence scoring and category filtering.' 
+              },
+              { 
+                num: '07', 
+                title: 'IOC EXTRACTION & DEFANGING', 
+                desc: 'Automated extraction of observable indicators (URLs, domains, emails, IPs, file hashes) defanged for safe SOC handling and copy-to-clipboard workflows.' 
+              }
             ].map((cap, idx) => (
-              <div key={idx}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '1rem', marginBottom: '1rem' }}>
-                  <span className="mono-label" style={{ color: 'var(--text-primary)' }}>{cap.num}</span>
-                  <h4 style={{ fontSize: '1.125rem', fontWeight: 700 }}>{cap.title}</h4>
+              <div 
+                key={idx} 
+                className="hover-magnify-card" 
+                style={{ 
+                  backgroundColor: 'var(--bg-primary)', 
+                  padding: '1.75rem', 
+                  border: '1px solid var(--border-light)', 
+                  borderRadius: 'var(--r-sm)' 
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.85rem', marginBottom: '1rem' }}>
+                  <span className="mono-label" style={{ color: 'var(--blue-primary)', fontWeight: 800 }}>{cap.num}</span>
+                  <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{cap.title}</h4>
                 </div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6 }}>{cap.desc}</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>{cap.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 04 / SOLUTIONS ───────────────────────────────────────────────── */}
+      <section id="solutions" className="section section-light" style={{ scrollMarginTop: '80px' }}>
+        <div className="container">
+          <p className="mono-label" style={{ marginBottom: '1.5rem', color: 'var(--blue-primary)' }}>04 / SOLUTIONS</p>
+          <h2 className="section-title" style={{ maxWidth: '24ch', marginBottom: '1.5rem' }}>
+            ENGINEERED FOR MODERN SECURITY WORKFLOWS.
+          </h2>
+          <p className="editorial-body" style={{ marginBottom: '3.5rem' }}>
+            Real-world forensic workflows supported by the PhishForensics AI unified analysis pipeline.
+          </p>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.75rem' }}>
+            {[
+              {
+                badge: 'INCIDENT RESPONSE',
+                title: 'Phishing Investigation',
+                desc: 'Rapidly triage suspicious inbound emails, SMS messages, and URLs. Instead of opaque verdicts, analysts receive structured evidence, defanged observables, and verifiable risk assessments.'
+              },
+              {
+                badge: 'SOC OPERATIONS',
+                title: 'Security Analysis & IOC Triage',
+                desc: 'Instantly isolate indicators of compromise, copy defanged values for threat hunting, and map observed attacker behaviors directly to MITRE ATT&CK enterprise techniques.'
+              },
+              {
+                badge: 'THREAT INTELLIGENCE',
+                title: 'Incident Understanding',
+                desc: 'Gain deep visibility into deceptive campaigns by reconstructing the multi-stage attacker progression, understanding primary objectives, and modeling potential victim exposure.'
+              },
+              {
+                badge: 'DEFENSIVE TRAINING',
+                title: 'Security Awareness & Education',
+                desc: 'Transform suspicious messages into safe educational walkthroughs. Interactive simulations illustrate why lures look legitimate and provide concrete guidance on what to check next time.'
+              }
+            ].map((sol, idx) => (
+              <div 
+                key={idx} 
+                className="hover-magnify-card" 
+                style={{ 
+                  backgroundColor: 'var(--bg-pure-white)', 
+                  padding: '2rem', 
+                  border: '1px solid var(--border-light)', 
+                  borderRadius: 'var(--r-sm)' 
+                }}
+              >
+                <span className="mono-label" style={{ color: 'var(--blue-primary)', fontSize: '0.68rem', display: 'inline-block', marginBottom: '0.75rem' }}>
+                  {sol.badge}
+                </span>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-primary)' }}>
+                  {sol.title}
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>
+                  {sol.desc}
+                </p>
               </div>
             ))}
           </div>

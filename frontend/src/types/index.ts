@@ -1,4 +1,4 @@
-export type InputType = 'url' | 'text' | 'image';
+export type InputType = 'email' | 'url' | 'text' | 'image';
 
 export interface AnalysisRequest {
   type: InputType;

@@ -93,23 +93,29 @@ export function evaluateMitreRules(ctx: EvaluatorContext): {
     ctx.traits.some(t => t.present && ['urgency', 'impersonation', 'credentialTargeting', 'fear', 'authority'].includes(t.key)) ||
     ctx.stages.some(s => s.phaseCategory === 'delivery' || s.phaseCategory === 'social_engineering');
 
-  // If artifact is deemed safe or completely devoid of suspicious indicators
-  if (!isPhishingOrSuspicious && ctx.threatVerdict === 'safe') {
-    return {
-      mappings: [],
-      uncertaintyNotes: ['Artifact does not display hostile or deceptive indicators sufficient to support MITRE ATT&CK mapping.']
-    };
-  }
-
   const urlCheck = hasActualUrlIndicator(ctx);
   const attachCheck = hasActualAttachmentIndicator(ctx);
+
+  // If artifact is deemed safe, unknown, or completely devoid of concrete technical indicators
+  if ((ctx.threatVerdict === 'safe' || ctx.threatVerdict === 'unknown') && !urlCheck.hasUrl && !attachCheck.hasAttachment) {
+    return {
+      mappings: [],
+      uncertaintyNotes: [
+        ctx.threatVerdict === 'unknown'
+          ? 'Threat analysis produced an unknown or inconclusive verdict without verified IOCs; insufficient evidence to support MITRE ATT&CK techniques.'
+          : 'Artifact does not display hostile or deceptive indicators sufficient to support MITRE ATT&CK mapping.'
+      ]
+    };
+  }
 
   // Check for textual mention of links without actual URL IOC
   const textMentionsLink = /(?:link|url|click|portal|verify|log\s*in|sign\s*in)/i.test(ctx.rawContent);
 
+  const isLureSource = ctx.sourceType === 'email' || ctx.sourceType === 'image' || ctx.sourceType === 'screenshot' || ctx.sourceType === 'text';
+
   // RULE 1: T1566.002 - Spearphishing Link
   // STRICT REQUIREMENT: Must have an actual extracted URL artifact in an email/lure context
-  if (ctx.sourceType === 'email' && urlCheck.hasUrl && isPhishingOrSuspicious) {
+  if (isLureSource && urlCheck.hasUrl && isPhishingOrSuspicious) {
     mappings.push({
       techniqueId: MITRE_CATALOG.SPEARPHISHING_LINK.techniqueId,
       techniqueName: MITRE_CATALOG.SPEARPHISHING_LINK.techniqueName,
@@ -118,7 +124,7 @@ export function evaluateMitreRules(ctx: EvaluatorContext): {
       tactic: MITRE_CATALOG.SPEARPHISHING_LINK.tactic,
       confidence: 85,
       supportingEvidenceRefs: urlCheck.refs,
-      mappingRationale: `Inbound email contains verified technical link artifact (${urlCheck.values.join(', ')}) deployed as an initial access vector.`
+      mappingRationale: `Submitted artifact (${ctx.sourceType}) contains verified technical link artifact (${urlCheck.values.join(', ')}) deployed as an initial access vector.`
     });
 
     // RULE 1B: T1204.001 - User Execution: Malicious Link
@@ -164,8 +170,8 @@ export function evaluateMitreRules(ctx: EvaluatorContext): {
   }
 
   // RULE 3: T1566 (Parent Only) - Inbound Phishing Lure Without Concrete URL or Attachment Artifact
-  // TRIGGER: Email source with suspicious pretext/manipulation, but NO extracted URL or attachment IOC
-  if (ctx.sourceType === 'email' && !urlCheck.hasUrl && !attachCheck.hasAttachment && isPhishingOrSuspicious) {
+  // TRIGGER: Lure source with suspicious pretext/manipulation, but NO extracted URL or attachment IOC
+  if (isLureSource && !urlCheck.hasUrl && !attachCheck.hasAttachment && isPhishingOrSuspicious) {
     const contextualRefs = ctx.evidence.filter(e => e.category === 'contextual' || e.category === 'psychological').map(e => e.id);
     
     mappings.push({
@@ -175,8 +181,8 @@ export function evaluateMitreRules(ctx: EvaluatorContext): {
       subTechniqueName: null,
       tactic: MITRE_CATALOG.PHISHING_PARENT.tactic,
       confidence: 60,
-      supportingEvidenceRefs: contextualRefs.length > 0 ? contextualRefs : ['input_email_lure'],
-      mappingRationale: 'Inbound email presents deceptive social engineering characteristics, but lacks an extracted URL or attachment artifact to substantiate a specific sub-technique.'
+      supportingEvidenceRefs: contextualRefs.length > 0 ? contextualRefs : ['input_lure'],
+      mappingRationale: `Submitted artifact (${ctx.sourceType}) presents deceptive social engineering characteristics, but lacks an extracted URL or attachment artifact to substantiate a specific sub-technique.`
     });
 
     if (textMentionsLink) {
@@ -185,7 +191,7 @@ export function evaluateMitreRules(ctx: EvaluatorContext): {
       );
     } else {
       uncertaintyNotes.push(
-        'Inbound email exhibits deceptive lure characteristics, but contains neither an extracted URL nor an attachment indicator. Classified under parent technique T1566.'
+        `Submitted ${ctx.sourceType} artifact exhibits deceptive lure characteristics, but contains neither an extracted URL nor an attachment indicator. Classified under parent technique T1566.`
       );
     }
   }

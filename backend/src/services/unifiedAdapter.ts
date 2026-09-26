@@ -18,7 +18,8 @@ export function mapCanonicalToUnified(
         category: 'technical' as const,
         value: ti.value || ti.defangedValue, // some IOCs might not be defanged
         defangedValue: ti.defangedValue || null,
-        description: ti.context || 'Technical indicator extracted from artifact'
+        description: ti.context || 'Technical indicator extracted from artifact',
+        confidence: ti.suspicionLevel === 'high' ? 95 : 90
     }));
 
     // Normalize social engineering
@@ -27,7 +28,8 @@ export function mapCanonicalToUnified(
         category: 'psychological' as const,
         value: se.techniqueName,
         defangedValue: null,
-        description: se.explanation
+        description: se.explanation,
+        confidence: se.confidence || 80
     }));
 
     // Normalize contextual evidence
@@ -36,7 +38,8 @@ export function mapCanonicalToUnified(
         category: 'contextual' as const,
         value: ev.rawContent || ev.defangedContent || '',
         defangedValue: ev.defangedContent || null,
-        description: ev.description
+        description: ev.description,
+        confidence: ev.confidence ?? 85
     }));
 
     return {

@@ -97,10 +97,17 @@ export function buildAnalysisPrompt(
 ): string {
   // Format artifacts for context
   const artifactsContext = input.artifacts.map(a => {
+    const isImage = a.type === 'screenshot';
+    const visualInfo = isImage && a.metadata?.readability
+      ? `Visual Readability: ${a.metadata.readability}
+Visual Indicators: ${Array.isArray(a.metadata.visualForensicIndicators) && a.metadata.visualForensicIndicators.length > 0 ? (a.metadata.visualForensicIndicators as string[]).join(', ') : 'None observed'}
+`
+      : '';
+
     return `Artifact ID: ${a.id}
 Type: ${a.type}
 Format: ${a.format || 'unknown'}
---- CONTENT BEGIN ---
+${visualInfo}--- CONTENT BEGIN ---
 ${a.sanitizedContent}
 --- CONTENT END ---
 `;

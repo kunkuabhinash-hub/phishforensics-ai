@@ -16,7 +16,9 @@ export function mapToMitreAttack(
   originalInput?: { sourceType: string; content: string }
 ): MitreAttackAnalysis {
   const sourceType = originalInput?.sourceType || canonical.artifacts?.[0]?.type || 'text';
-  const rawContent = originalInput?.content || canonical.artifacts?.[0]?.sanitizedContent || '';
+  const rawContent = (sourceType === 'image' || sourceType === 'screenshot')
+    ? (canonical.artifacts?.[0]?.sanitizedContent || '')
+    : (originalInput?.content || canonical.artifacts?.[0]?.sanitizedContent || '');
 
   // Consolidate technical indicators
   const technicalIndicators = (canonical.technicalIndicators || []).map(ti => ({

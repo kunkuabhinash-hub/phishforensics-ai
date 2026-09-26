@@ -39,6 +39,7 @@ export interface UnifiedPhishForensicsContract {
     value: string; 
     defangedValue: string | null; 
     description: string;
+    confidence?: number | null;
   }[];
 
   /** Deterministic Orchestration (Sourced from Simulation & Reconstruction Engines) */

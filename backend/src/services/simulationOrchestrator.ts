@@ -7,7 +7,17 @@ export function runSimulationPipeline(
     canonical: CanonicalThreatIntelligence,
     unifiedPhase1: UnifiedPhishForensicsContract
 ): UnifiedPhishForensicsContract {
-    
+    // If image processing failed, preserve clean null state for downstream reconstruction
+    if (canonical.artifacts?.some(a => a.metadata?.imageProcessingFailure)) {
+        return {
+            ...unifiedPhase1,
+            attackDNA: null,
+            reconstruction: null,
+            safeSimulation: null,
+            safetyGuidance: null
+        };
+    }
+
     // 1. Map CanonicalThreatIntelligence to ThreatAnalysisInput
     const threatAnalysisInput: ThreatAnalysisInput = {
         analysisId: unifiedPhase1.analysisId,

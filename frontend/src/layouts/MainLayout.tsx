@@ -1,8 +1,43 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import ForensicCursor from '../components/ForensicCursor';
 
 export default function MainLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const navItems = [
+    { label: 'PRODUCTS', id: 'products' },
+    { label: 'SOLUTIONS', id: 'solutions' },
+    { label: 'WHY US?', id: 'why-us' },
+    { label: 'HOW IT WORKS', id: 'how-it-works' },
+  ];
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+    e.preventDefault();
+    if (location.pathname === '/') {
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      navigate(`/#${targetId}`);
+    }
+  };
+
+  const handleAnalyzeClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const textarea = document.querySelector('textarea.input-field') as HTMLTextAreaElement | null;
+      if (textarea) textarea.focus();
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="layout-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <ForensicCursor />
       
       {/* ─── STICKY NAVIGATION ────────────────────────────────────────── */}
       <header 
@@ -12,37 +47,43 @@ export default function MainLayout() {
           zIndex: 100, 
           backgroundColor: 'var(--bg-warm-white)', 
           borderBottom: '1px solid var(--border-light)',
-          padding: '1rem 0'
+          padding: '0.85rem 0'
         }}
       >
-        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="container header-nav-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           
           {/* Logo */}
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.02em' }}>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.02em', flexShrink: 0 }}>
             <div style={{ width: '20px', height: '20px', backgroundColor: 'var(--text-primary)' }}></div>
             PHISHFORENSICS <span style={{ color: 'var(--blue-primary)' }}>AI</span>
           </Link>
 
           {/* Nav Links */}
-          <nav style={{ display: 'none', gap: '2rem', alignItems: 'center' }} className="desktop-nav">
-            {['Product', 'How It Works', 'Attack DNA', 'Forensics', 'Dashboard'].map((link) => (
-              <a href="#" key={link} className="mono-label" style={{ color: 'var(--text-primary)', transition: 'color 0.2s', fontWeight: 500 }}>
-                {link.toUpperCase()}
+          <nav className="main-nav-links" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+            {navItems.map((item) => (
+              <a 
+                href={`#${item.id}`} 
+                key={item.label} 
+                onClick={(e) => handleNavClick(e, item.id)}
+                className="mono-label nav-link-item" 
+                style={{ 
+                  color: 'var(--text-primary)', 
+                  transition: 'color 0.2s ease', 
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                  letterSpacing: '0.08em',
+                  cursor: 'pointer'
+                }}
+              >
+                {item.label}
               </a>
             ))}
           </nav>
-          
-          <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-             {['Product', 'How It Works'].map((link) => (
-                <a href="#" key={link} className="mono-label" style={{ color: 'var(--text-primary)', transition: 'color 0.2s', fontWeight: 500 }}>
-                  {link.toUpperCase()}
-                </a>
-              ))}
-          </nav>
 
           {/* CTA */}
-          <Link 
-            to="/" 
+          <a 
+            href="#analyze" 
+            onClick={handleAnalyzeClick}
             style={{ 
               padding: '0.5rem 1rem', 
               backgroundColor: 'transparent', 
@@ -52,11 +93,13 @@ export default function MainLayout() {
               fontSize: '0.75rem', 
               fontWeight: 600, 
               borderRadius: 'var(--r-sm)',
-              textTransform: 'uppercase'
+              textTransform: 'uppercase',
+              flexShrink: 0,
+              cursor: 'pointer'
             }}
           >
             ANALYZE THREAT
-          </Link>
+          </a>
         </div>
       </header>
 

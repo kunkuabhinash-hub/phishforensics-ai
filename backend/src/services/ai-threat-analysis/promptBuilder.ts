@@ -32,7 +32,62 @@ CRITICAL RULES:
 15. CROSS-ARTIFACT CORRELATION: If multiple artifacts are provided, reason about any shared context, contradictions, or temporal relationships. Do not invent relationships if none exist. Reference valid evidence IDs to support the correlation.
 
 OUTPUT FORMAT:
-You must return a valid JSON object adhering strictly to the provided AIReasoningResult schema.
+You must return ONLY a single valid JSON object adhering strictly to the following property names and structure with no surrounding markdown or explanation:
+
+{
+  "suggestedVerdict": "<string: 'malicious' | 'suspicious' | 'benign' | 'unknown'>",
+  "suggestedSeverity": "<string: 'critical' | 'high' | 'medium' | 'low' | 'info' | 'unknown'>",
+  "suggestedRiskScore": <number 0-100 or null>,
+  "confidenceScore": <number 0-100>,
+  "summary": "<string: concise executive summary of the threat analysis>",
+  "verdictJustification": "<string: detailed evidence-based justification for the verdict>",
+  "findings": [
+    {
+      "category": "<string: e.g. social_engineering | technical | urgency>",
+      "title": "<string: finding title>",
+      "description": "<string: detailed explanation>",
+      "supportingEvidenceIds": ["<string: Evidence ID from catalog>"],
+      "contradictingEvidenceIds": [],
+      "confidence": <number 0-100>,
+      "status": "<string: 'observed' | 'inferred' | 'unverified'>",
+      "severity": "<string: 'critical' | 'high' | 'medium' | 'low' | 'info'>",
+      "impact": "<string: potential impact>"
+    }
+  ],
+  "attackerIntent": {
+    "primaryObjective": "<string: primary attacker objective>",
+    "secondaryObjectives": ["<string: secondary objective>"],
+    "targetedAsset": "<string: targeted asset or account>",
+    "intendedVictimAction": "<string: action attacker attempts to induce>",
+    "potentialImpact": "<string: impact if victim complies>",
+    "supportingEvidenceIds": ["<string: Evidence ID from catalog>"],
+    "confidence": <number 0-100>,
+    "uncertaintyNotes": "<string or null>"
+  },
+  "attackDNAAttributes": [
+    {
+      "category": "<string: e.g. urgency_pressure | authority_impersonation | credential_request>",
+      "characteristic": "<string: behavioral characteristic name>",
+      "value": "<string: observed pattern or value>",
+      "supportingEvidenceIds": ["<string: Evidence ID from catalog>"],
+      "status": "<string: 'observed' | 'inferred' | 'unverified' | 'unknown'>",
+      "confidence": <number 0-100>,
+      "explanation": "<string: explanation of trait>"
+    }
+  ],
+  "reconstructionStages": [
+    {
+      "stageName": "<string: stage title, e.g. Pretext Delivery | Coercion>",
+      "description": "<string: narrative of stage>",
+      "supportingEvidenceIds": ["<string: Evidence ID from catalog>"],
+      "confidence": <number 0-100>,
+      "status": "<string: 'observed' | 'inferred' | 'unverified' | 'unknown'>",
+      "victimAction": "<string or null: victim action at this stage>",
+      "safeConsequence": "<string or null: hypothetical defensive consequence>",
+      "uncertaintyNotes": "<string or null>"
+    }
+  ]
+}
 `;
 }
 

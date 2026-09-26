@@ -78,14 +78,78 @@ export function validateAndMapReasoning(
   // Helper to ensure values expected to be arrays are defensively normalized
   const ensureArray = <T>(val: any): T[] => Array.isArray(val) ? val : (val && typeof val === 'object' ? [val] : []);
 
+  // Safe alias extraction for nested summary object if provided by AI
+  const summaryObj = (typeof rawReasoning.summary === 'object' && rawReasoning.summary !== null && !Array.isArray(rawReasoning.summary))
+    ? (rawReasoning.summary as Record<string, any>)
+    : null;
+
+  // 1. suggestedVerdict: flat first, then summary.verdict, fallback 'unknown'
+  const resolvedVerdict = (typeof rawReasoning.suggestedVerdict === 'string' && rawReasoning.suggestedVerdict.trim())
+    ? rawReasoning.suggestedVerdict
+    : (summaryObj && typeof summaryObj.verdict === 'string' && summaryObj.verdict.trim()
+      ? summaryObj.verdict
+      : 'unknown');
+
+  // 2. suggestedSeverity: flat first, then summary.severity, fallback 'unknown'
+  const resolvedSeverity = (typeof rawReasoning.suggestedSeverity === 'string' && rawReasoning.suggestedSeverity.trim())
+    ? rawReasoning.suggestedSeverity
+    : (summaryObj && typeof summaryObj.severity === 'string' && summaryObj.severity.trim()
+      ? summaryObj.severity
+      : 'unknown');
+
+  // 3. suggestedRiskScore: flat first, then summary.riskScore
+  const rawRiskVal = typeof rawReasoning.suggestedRiskScore === 'number'
+    ? rawReasoning.suggestedRiskScore
+    : (summaryObj && typeof summaryObj.riskScore === 'number' ? summaryObj.riskScore : undefined);
+  const resolvedRiskScore = validateConfidence(rawRiskVal, -1) === -1 ? null : validateConfidence(rawRiskVal);
+
+  // 4. confidenceScore: flat first, then summary.confidenceScore
+  const rawConfidenceVal = typeof rawReasoning.confidenceScore === 'number'
+    ? rawReasoning.confidenceScore
+    : (summaryObj && typeof summaryObj.confidenceScore === 'number' ? summaryObj.confidenceScore : undefined);
+  const resolvedConfidence = validateConfidence(rawConfidenceVal, 0);
+
+  // 5. summary: flat string first, then summary.executiveSummary, fallback default
+  const resolvedSummary = (typeof rawReasoning.summary === 'string' && rawReasoning.summary.trim())
+    ? rawReasoning.summary
+    : (summaryObj && typeof summaryObj.executiveSummary === 'string' && summaryObj.executiveSummary.trim()
+      ? summaryObj.executiveSummary
+      : 'Analysis completed with insufficient reasoning details.');
+
+  // 6. verdictJustification: flat first, then summary.executiveSummary, fallback default
+  const resolvedJustification = (typeof rawReasoning.verdictJustification === 'string' && rawReasoning.verdictJustification.trim())
+    ? rawReasoning.verdictJustification
+    : (summaryObj && typeof summaryObj.executiveSummary === 'string' && summaryObj.executiveSummary.trim()
+      ? summaryObj.executiveSummary
+      : 'No justification provided by reasoning engine.');
+
+  // Attacker Intent alias resolution
+  const intentObj = (typeof rawReasoning.attackerIntent === 'object' && rawReasoning.attackerIntent !== null && !Array.isArray(rawReasoning.attackerIntent))
+    ? (rawReasoning.attackerIntent as Record<string, any>)
+    : null;
+
+  const resolvedPrimaryObjective = (intentObj && typeof intentObj.primaryObjective === 'string' && intentObj.primaryObjective.trim())
+    ? intentObj.primaryObjective
+    : (intentObj && typeof intentObj.primaryGoal === 'string' && intentObj.primaryGoal.trim()
+      ? intentObj.primaryGoal
+      : 'Unknown');
+
+  const resolvedIntendedVictimAction = (intentObj && typeof intentObj.intendedVictimAction === 'string' && intentObj.intendedVictimAction.trim())
+    ? intentObj.intendedVictimAction
+    : 'Unknown';
+
+  const resolvedPotentialImpact = (intentObj && typeof intentObj.potentialImpact === 'string' && intentObj.potentialImpact.trim())
+    ? intentObj.potentialImpact
+    : 'Unknown';
+
   // Ensure default fallback values for critical structural fields
   const safeResult: ProviderAnalysisResult = {
-    suggestedVerdict: rawReasoning.suggestedVerdict || 'unknown',
-    suggestedSeverity: rawReasoning.suggestedSeverity || 'unknown',
-    suggestedRiskScore: validateConfidence(rawReasoning.suggestedRiskScore, -1) === -1 ? null : validateConfidence(rawReasoning.suggestedRiskScore),
-    confidenceScore: validateConfidence(rawReasoning.confidenceScore, 0),
-    summary: rawReasoning.summary || 'Analysis completed with insufficient reasoning details.',
-    verdictJustification: rawReasoning.verdictJustification || 'No justification provided by reasoning engine.',
+    suggestedVerdict: resolvedVerdict as any,
+    suggestedSeverity: resolvedSeverity as any,
+    suggestedRiskScore: resolvedRiskScore,
+    confidenceScore: resolvedConfidence,
+    summary: resolvedSummary,
+    verdictJustification: resolvedJustification,
     
     findings: ensureArray<any>(rawReasoning.findings).map(f => ({
       category: f.category || 'general_observation',
@@ -100,14 +164,14 @@ export function validateAndMapReasoning(
     })),
     
     attackerIntent: {
-      primaryObjective: rawReasoning.attackerIntent?.primaryObjective || 'Unknown',
-      secondaryObjectives: ensureArray<string>(rawReasoning.attackerIntent?.secondaryObjectives),
-      targetedAsset: rawReasoning.attackerIntent?.targetedAsset || 'Unknown',
-      intendedVictimAction: rawReasoning.attackerIntent?.intendedVictimAction || 'Unknown',
-      potentialImpact: rawReasoning.attackerIntent?.potentialImpact || 'Unknown',
-      supportingEvidenceIds: validateEvidenceIds(rawReasoning.attackerIntent?.supportingEvidenceIds, 'attacker intent'),
-      confidence: validateConfidence(rawReasoning.attackerIntent?.confidence, 0),
-      uncertaintyNotes: rawReasoning.attackerIntent?.uncertaintyNotes || null,
+      primaryObjective: resolvedPrimaryObjective,
+      secondaryObjectives: ensureArray<string>(intentObj?.secondaryObjectives || (intentObj as any)?.secondaryGoals),
+      targetedAsset: (intentObj && typeof intentObj.targetedAsset === 'string' && intentObj.targetedAsset.trim()) ? intentObj.targetedAsset : 'Unknown',
+      intendedVictimAction: resolvedIntendedVictimAction,
+      potentialImpact: resolvedPotentialImpact,
+      supportingEvidenceIds: validateEvidenceIds(intentObj?.supportingEvidenceIds, 'attacker intent'),
+      confidence: validateConfidence(intentObj?.confidence, 0),
+      uncertaintyNotes: intentObj?.uncertaintyNotes || null,
     },
     
     victimRequestedAction: {
@@ -127,24 +191,28 @@ export function validateAndMapReasoning(
       status: se.status || 'inferred',
     })),
     
-    attackDNAAttributes: ensureArray<any>(rawReasoning.attackDNAAttributes).map(dna => ({
+    attackDNAAttributes: ensureArray<any>(
+      rawReasoning.attackDNAAttributes || (rawReasoning as any).attackDna?.behavioralFingerprints
+    ).map(dna => ({
       category: dna.category || 'General',
-      characteristic: dna.characteristic || 'Unknown',
-      value: dna.value || '',
-      supportingEvidenceIds: validateEvidenceIds(dna.supportingEvidenceIds, `Attack DNA attribute "${dna.characteristic}"`),
+      characteristic: dna.characteristic || dna.indicator || 'Unknown',
+      value: dna.value || dna.indicator || '',
+      supportingEvidenceIds: validateEvidenceIds(dna.supportingEvidenceIds, `Attack DNA attribute "${dna.characteristic || dna.indicator || 'Unknown'}"`),
       status: dna.status || 'unknown',
       confidence: validateConfidence(dna.confidence, 0),
       explanation: dna.explanation || '',
     })),
     
-    reconstructionStages: ensureArray<any>(rawReasoning.reconstructionStages).map(stage => ({
+    reconstructionStages: ensureArray<any>(
+      rawReasoning.reconstructionStages || (rawReasoning as any).defensiveReconstruction?.stages
+    ).map(stage => ({
       stageName: stage.stageName || 'Unknown Stage',
       description: stage.description || '',
       supportingEvidenceIds: validateEvidenceIds(stage.supportingEvidenceIds, `reconstruction stage "${stage.stageName}"`),
       confidence: validateConfidence(stage.confidence, 0),
       status: stage.status || 'unknown',
-      victimAction: stage.victimAction,
-      safeConsequence: stage.safeConsequence,
+      victimAction: stage.victimAction || stage.requestedAction,
+      safeConsequence: stage.safeConsequence || stage.hypotheticalConsequence,
       uncertaintyNotes: stage.uncertaintyNotes,
     })),
     

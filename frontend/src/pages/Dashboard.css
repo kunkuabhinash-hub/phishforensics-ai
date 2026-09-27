@@ -25,7 +25,7 @@
   border: 1px solid var(--border-divider);
   border-radius: var(--r-md);
   padding: 1.5rem 1.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 12px var(--shadow-color-light);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   overflow: hidden;
@@ -33,7 +33,7 @@
 
 .forensic-card:hover {
   border-color: #B0BEC5;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px var(--shadow-color-light);
 }
 
 .card-header-row {
@@ -85,7 +85,7 @@
   background: var(--surface-card);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-md);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 12px var(--shadow-color-light);
 }
 
 .header-meta-group {
@@ -112,7 +112,7 @@
   background: var(--surface-hover);
   padding: 0.25rem 0.65rem;
   border-radius: var(--r-sm);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-divider);
 }
 
 .meta-chip strong {
@@ -144,7 +144,7 @@
 
 .btn-header-action.btn-highlight {
   background: var(--blue-primary);
-  color: #FFFFFF;
+  color: var(--bg-page); /* auto-replaced */
   border-color: var(--blue-primary);
 }
 
@@ -157,10 +157,10 @@
   right: 0;
   top: 100%;
   margin-top: 0.4rem;
-  background: #FFFFFF;
+  background: var(--surface-card);
   border: 1px solid var(--border-bold);
   border-radius: var(--r-sm);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-lg);
   z-index: 100;
   min-width: 175px;
   display: flex;
@@ -194,12 +194,12 @@
 
 /* ─── 1. PRIMARY THREAT ANALYSIS CARD ───────────────────────────── */
 .primary-threat-analysis-card {
-  background: #FFFFFF;
+  background: var(--surface-card);
   border: 1px solid var(--border-bold);
   border-top: 4px solid var(--blue-primary);
   border-radius: var(--r-md);
   padding: 1.75rem 2rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px var(--shadow-color-light);
 }
 
 .threat-analysis-header-row {
@@ -264,27 +264,27 @@
   border-radius: var(--r-md);
   border: 1px solid var(--border-divider);
   border-left: 6px solid #94A3B8;
-  background: #F8FAFC;
+  background: var(--surface-hover);
 }
 
 .verdict-hero-badge-box.verdict-malicious,
 .verdict-hero-badge-box.verdict-phishing {
   border-left-color: var(--danger);
   background: var(--surface-danger-light);
-  border-color: #FECDD3;
+  border-color: var(--danger);
 }
 
 .verdict-hero-badge-box.verdict-suspicious {
   border-left-color: var(--warning);
-  background: #FFFBEB;
+  background: var(--surface-card);
   border-color: #FDE68A;
 }
 
 .verdict-hero-badge-box.verdict-benign,
 .verdict-hero-badge-box.verdict-safe {
   border-left-color: var(--success);
-  background: #F0FDF4;
-  border-color: #BBF7D0;
+  background: var(--surface-success-light);
+  border-color: var(--success);
 }
 
 .verdict-hero-icon {
@@ -326,7 +326,7 @@
 .verdict-unknown .verdict-main-text { color: var(--text-muted); }
 
 .threat-explanation-card {
-  background: #F8FAFC;
+  background: var(--surface-hover);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-sm);
   padding: 1.1rem 1.25rem;
@@ -356,7 +356,7 @@
 }
 
 .metric-box-card {
-  background: #F8FAFC;
+  background: var(--surface-hover);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-sm);
   padding: 1rem 1.15rem;
@@ -417,7 +417,7 @@
 .meter-info { background: var(--blue-primary); }
 
 .intent-impact-summary-card {
-  background: #FFFFFF;
+  background: var(--surface-card);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-sm);
   padding: 1.15rem 1.25rem;
@@ -457,7 +457,7 @@
 .impact-primary-text {
   font-size: 0.92rem;
   font-weight: 600;
-  color: #DC2626;
+  color: var(--danger);
   margin: 0;
   line-height: 1.45;
 }
@@ -491,7 +491,7 @@
 }
 
 .evidence-preview-content {
-  background: #F8FAFC;
+  background: var(--surface-hover);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-sm);
   padding: 0.85rem 1rem;
@@ -595,7 +595,7 @@
 
 .feature-card-btn.feature-card-active {
   border-color: var(--blue-primary);
-  background: #F0F7FF;
+  background: var(--surface-accent-light);
   box-shadow: 0 0 0 1px var(--blue-primary), 0 4px 14px rgba(37, 99, 235, 0.12);
 }
 
@@ -647,7 +647,7 @@
   justify-content: space-between;
   align-items: center;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid var(--border-divider);
   font-family: var(--font-mono);
   font-size: 0.72rem;
 }
@@ -667,7 +667,7 @@
   background: var(--surface-card);
   border: 1px solid var(--blue-primary);
   border-radius: var(--r-md);
-  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px var(--shadow-color-light);
   overflow: hidden;
   animation: panelSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   outline: none;
@@ -689,7 +689,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.15rem 1.75rem;
-  background: linear-gradient(90deg, #F8FAFC 0%, #FFFFFF 100%);
+  background: linear-gradient(90deg, var(--surface-hover) 0%, var(--surface-card) 100%);
   border-bottom: 1px solid var(--border-divider);
   gap: 1rem;
   flex-wrap: wrap;
@@ -741,9 +741,9 @@
 }
 
 .btn-close-feature-panel:hover {
-  background: #FEE2E2;
+  background: var(--surface-danger-light);
   color: var(--danger);
-  border-color: #FCA5A5;
+  border-color: var(--danger);
 }
 
 .feature-panel-body {
@@ -769,7 +769,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.85rem 1.75rem;
-  background: #F8FAFC;
+  background: var(--surface-hover);
   border-top: 1px solid var(--border-divider);
   gap: 1rem;
   flex-wrap: wrap;
@@ -827,7 +827,7 @@
 }
 
 .export-action-card {
-  background: #F8FAFC;
+  background: var(--surface-hover);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-md);
   padding: 1.5rem;
@@ -862,7 +862,7 @@
 }
 
 .export-breakdown-box {
-  background: #FFFFFF;
+  background: var(--surface-card);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-sm);
   padding: 1.15rem 1.25rem;
@@ -906,7 +906,7 @@
 }
 
 .callout-quote-box {
-  background: #F8FAFC;
+  background: var(--surface-hover);
   border-left: 3px solid var(--blue-primary);
   padding: 0.85rem 1rem;
   border-radius: 0 var(--r-sm) var(--r-sm) 0;
@@ -928,11 +928,11 @@
   letter-spacing: 0.05em;
 }
 
-.pill-danger { background: #FFE4E6; color: var(--danger); border: 1px solid #FECDD3; }
-.pill-warning { background: #FEF3C7; color: var(--warning); border: 1px solid #FDE68A; }
-.pill-success { background: #D1FAE5; color: var(--success); border: 1px solid #A7F3D0; }
+.pill-danger { background: var(--surface-danger-light); color: var(--danger); border: 1px solid #FECDD3; }
+.pill-warning { background: var(--surface-warning-light); color: var(--warning); border: 1px solid #FDE68A; }
+.pill-success { background: var(--surface-success-light); color: var(--success); border: 1px solid #A7F3D0; }
 .pill-neutral { background: var(--surface-hover); color: var(--text-secondary); border: 1px solid var(--border-divider); }
-.pill-info { background: #DBEAFE; color: var(--blue-primary); border: 1px solid #BFDBFE; }
+.pill-info { background: var(--surface-accent-light); color: var(--blue-primary); border: 1px solid #BFDBFE; }
 
 /* ─── FEATURE 2: EVIDENCE CONFIDENCE MATRIX ──────────────────────── */
 .evidence-filter-bar {
@@ -956,13 +956,13 @@
 }
 
 .filter-btn:hover {
-  background: #E2E8F0;
+  background: var(--surface-elevated);
   color: var(--text-primary);
 }
 
 .filter-btn.active {
   background: var(--text-primary);
-  color: #FFFFFF;
+  color: var(--bg-page); /* auto-replaced */
   border-color: var(--text-primary);
 }
 
@@ -979,7 +979,7 @@
 }
 
 .evidence-item-card {
-  background: #FAFAFA;
+  background: var(--surface-hover);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-sm);
   padding: 0.9rem 1rem;
@@ -991,15 +991,15 @@
 }
 
 .evidence-item-card:hover {
-  background: #FFFFFF;
-  border-color: #94A3B8;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  background: var(--surface-card);
+  border-color: var(--text-muted);
+  box-shadow: 0 4px 12px var(--shadow-color-light);
 }
 
 .evidence-highlight-active {
   border-color: var(--blue-primary) !important;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25) !important;
-  background: #EFF6FF !important;
+  background: var(--surface-accent-light) !important;
   animation: pulseHighlight 2s ease infinite alternate;
 }
 
@@ -1072,7 +1072,7 @@
 }
 
 .ioc-item-card {
-  background: #F8FAFC;
+  background: var(--surface-hover);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-sm);
   padding: 0.85rem 1rem;
@@ -1091,7 +1091,7 @@
   font-family: var(--font-mono);
   font-size: 0.68rem;
   font-weight: 700;
-  background: #E2E8F0;
+  background: var(--surface-elevated);
   color: var(--text-primary);
   padding: 0.15rem 0.45rem;
   border-radius: 3px;
@@ -1120,7 +1120,7 @@
   padding: 0.25rem 0.6rem;
   border-radius: 3px;
   border: 1px solid var(--border-divider);
-  background: #FFFFFF;
+  background: var(--surface-card);
   color: var(--text-secondary);
   cursor: pointer;
   display: inline-flex;
@@ -1144,7 +1144,7 @@
 }
 
 .fingerprint-meta-item {
-  background: #F8FAFC;
+  background: var(--surface-hover);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-sm);
   padding: 0.75rem 0.85rem;
@@ -1183,7 +1183,7 @@
 }
 
 .dna-trait-pill {
-  background: #F8FAFC;
+  background: var(--surface-hover);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-sm);
   padding: 0.6rem 0.75rem;
@@ -1193,7 +1193,7 @@
 }
 
 .dna-trait-pill.trait-active {
-  background: #EFF6FF;
+  background: var(--surface-accent-light);
   border-color: #BFDBFE;
 }
 
@@ -1281,8 +1281,8 @@
   margin-top: 0.35rem;
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: #0369A1;
-  background: #E0F2FE;
+  color: var(--blue-primary);
+  background: var(--surface-accent-light);
   padding: 0.15rem 0.5rem;
   border-radius: 3px;
 }
@@ -1297,8 +1297,8 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #047857;
-  background: #D1FAE5;
+  color: var(--success);
+  background: var(--surface-success-light);
   border: 1px solid #A7F3D0;
   padding: 0.25rem 0.65rem;
   border-radius: var(--r-sm);
@@ -1328,18 +1328,18 @@
 }
 
 .sim-tab-btn:hover {
-  background: #E2E8F0;
+  background: var(--surface-elevated);
   color: var(--text-primary);
 }
 
 .sim-tab-btn.active {
   background: var(--text-primary);
-  color: #FFFFFF;
+  color: var(--bg-page); /* auto-replaced */
   border-color: var(--text-primary);
 }
 
 .sim-active-stage-card {
-  background: #F8FAFC;
+  background: var(--surface-hover);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-sm);
   padding: 1.25rem 1.5rem;
@@ -1365,18 +1365,18 @@
   padding: 0.75rem 1rem;
   border-radius: 0 var(--r-sm) var(--r-sm) 0;
   font-size: 0.85rem;
-  color: #9F1239;
+  color: var(--danger);
   line-height: 1.5;
   margin-bottom: 0.75rem;
 }
 
 .sim-guidance-box {
-  background: #F0FDF4;
+  background: var(--surface-success-light);
   border-left: 3px solid var(--success);
   padding: 0.75rem 1rem;
   border-radius: 0 var(--r-sm) var(--r-sm) 0;
   font-size: 0.85rem;
-  color: #065F46;
+  color: var(--success);
   line-height: 1.5;
 }
 
@@ -1390,7 +1390,7 @@
   font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 600;
-  background: #FFFFFF;
+  background: var(--surface-card);
   border: 1px solid var(--border-divider);
   padding: 0.4rem 0.85rem;
   border-radius: var(--r-sm);
@@ -1417,7 +1417,7 @@
 }
 
 .impact-card {
-  background: #F8FAFC;
+  background: var(--surface-hover);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-sm);
   padding: 1.15rem;
@@ -1429,7 +1429,7 @@
 
 .impact-card.impact-established {
   border-left: 4px solid var(--danger);
-  background: #FFFDFD;
+  background: var(--surface-card);
 }
 
 .impact-card.impact-unsupported {
@@ -1476,7 +1476,7 @@
 }
 
 .mitre-primary-card {
-  background: #F8FAFC;
+  background: var(--surface-hover);
   border: 1px solid #BFDBFE;
   border-left: 4px solid var(--blue-primary);
   border-radius: var(--r-sm);
@@ -1510,7 +1510,7 @@
   font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 600;
-  background: #EFF6FF;
+  background: var(--surface-accent-light);
   border: 1px solid #BFDBFE;
   color: var(--blue-primary);
   padding: 0.2rem 0.6rem;
@@ -1536,7 +1536,7 @@
 
 /* Clickable MITRE Evidence Link Badge */
 .clickable-evidence-ref {
-  background: #DBEAFE;
+  background: var(--surface-accent-light);
   color: var(--blue-primary);
   border: 1px solid #BFDBFE;
   padding: 0.15rem 0.5rem;
@@ -1553,7 +1553,7 @@
 
 .clickable-evidence-ref:hover {
   background: var(--blue-primary);
-  color: #FFFFFF;
+  color: var(--bg-page); /* auto-replaced */
 }
 
 .tactics-badges-group {
@@ -1567,7 +1567,7 @@
   font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 600;
-  background: #F1F5F9;
+  background: var(--surface-hover);
   border: 1px solid var(--border-divider);
   color: var(--text-primary);
   padding: 0.25rem 0.6rem;
@@ -1581,18 +1581,18 @@
 
 .tactic-link-badge:hover {
   background: var(--text-primary);
-  color: #FFFFFF;
+  color: var(--bg-page); /* auto-replaced */
   border-color: var(--text-primary);
 }
 
 .uncertainty-note-box {
   margin-top: 1rem;
   padding: 0.85rem 1.15rem;
-  background: #FFFBEB;
+  background: var(--surface-card);
   border-left: 3px solid var(--warning);
   border-radius: 0 var(--r-sm) var(--r-sm) 0;
   font-size: 0.85rem;
-  color: #92400E;
+  color: var(--warning);
   line-height: 1.5;
 }
 
@@ -1604,7 +1604,7 @@
 }
 
 .guidance-item-card {
-  background: #FAFAFA;
+  background: var(--surface-hover);
   border: 1px solid var(--border-divider);
   border-radius: var(--r-sm);
   padding: 1rem 1.25rem;
@@ -1615,16 +1615,16 @@
 }
 
 .guidance-item-card:hover {
-  background: #FFFFFF;
-  border-color: #10B981;
+  background: var(--surface-card);
+  border-color: var(--success);
 }
 
 .guidance-icon-check {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #D1FAE5;
-  color: #059669;
+  background: var(--surface-success-light);
+  color: var(--success);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1674,10 +1674,10 @@
 }
 
 .modal-content-card {
-  background: #FFFFFF;
+  background: var(--surface-card);
   border-radius: var(--r-md);
   border: 1px solid var(--border-bold);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 1100px;
   max-height: 90vh;
@@ -1700,7 +1700,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
-  background: #F8FAFC;
+  background: var(--surface-hover);
   padding: 1rem 1.25rem;
   border-radius: var(--r-sm);
   border: 1px solid var(--border-divider);
@@ -1711,7 +1711,7 @@
   padding: 0.5rem 0.75rem;
   border-radius: var(--r-sm);
   border: 1px solid var(--border-bold);
-  background: #FFFFFF;
+  background: var(--surface-card);
   font-family: var(--font-mono);
   font-size: 0.82rem;
   color: var(--text-primary);
@@ -1732,7 +1732,7 @@
 }
 
 .comparison-table th {
-  background: #F8FAFC;
+  background: var(--surface-hover);
   font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 700;
@@ -1741,7 +1741,7 @@
 }
 
 .comparison-table tr:hover td {
-  background: #FAFAFA;
+  background: var(--surface-hover);
 }
 
 .compare-insights-grid {
@@ -1758,12 +1758,12 @@
 }
 
 .insight-box.box-shared {
-  background: #F0FDF4;
-  border-color: #BBF7D0;
+  background: var(--surface-success-light);
+  border-color: var(--success);
 }
 
 .insight-box.box-diff {
-  background: #EFF6FF;
+  background: var(--surface-accent-light);
   border-color: #BFDBFE;
 }
 
@@ -1771,7 +1771,7 @@
 .empty-state-box {
   padding: 2.5rem 1.5rem;
   text-align: center;
-  background: #FAFAFA;
+  background: var(--surface-hover);
   border: 1px dashed var(--border-divider);
   border-radius: var(--r-sm);
   color: var(--text-muted);
@@ -1793,7 +1793,7 @@
   align-items: center;
   gap: 0.5rem;
   background: var(--text-primary);
-  color: #FFFFFF;
+  color: var(--bg-page); /* auto-replaced */
   font-family: var(--font-mono);
   font-size: 0.85rem;
   font-weight: 700;
@@ -1814,7 +1814,7 @@
 /* ─── FEATURE 15: PRINT / EXPORT PDF STYLES ──────────────────────── */
 @media print {
   body {
-    background: #FFFFFF !important;
+    background: var(--surface-card) !important;
     color: #000000 !important;
   }
 

@@ -319,7 +319,7 @@ export default function Home() {
             </div>
             
             <div className="hero-visual" style={{ opacity: 0 }} ref={el => { if (el) el.classList.add('animate-fade-up', 'animate-delay-2'); }}>
-              <div style={{ backgroundColor: 'var(--surface-card)', border: '1px solid var(--border-bold)', padding: '2.5rem', borderRadius: 'var(--r-md)', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }}>
+              <div style={{ backgroundColor: 'var(--surface-card)', border: '1px solid var(--border-bold)', padding: '2.5rem', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-lg)' }}>
                 <p className="mono-label" style={{ marginBottom: '2rem', borderBottom: '1px solid var(--border-divider)', paddingBottom: '1rem' }}>FORENSIC ANALYSIS PREVIEW</p>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
@@ -809,7 +809,7 @@ export default function Home() {
             <h2 className="section-title">FROM HOMEPAGE<br/>TO INVESTIGATION.</h2>
           </div>
           
-          <div style={{ maxWidth: '900px', margin: '0 auto', border: '1px solid var(--border-divider)', borderRadius: 'var(--r-md)', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)' }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto', border: '1px solid var(--border-divider)', borderRadius: 'var(--r-md)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
             <div style={{ backgroundColor: 'var(--surface-hover)', padding: '1rem 2rem', borderBottom: '1px solid var(--border-divider)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{ display: 'flex', gap: '6px' }}>
                 <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--border-bold)' }}></div>

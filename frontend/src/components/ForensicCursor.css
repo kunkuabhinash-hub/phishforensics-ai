@@ -65,7 +65,7 @@
 /* Hovering interactive cards / evidence items / observables */
 .forensic-cursor-container.cursor-card .forensic-cursor-svg {
   transform: scale(1.06);
-  filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.35)) drop-shadow(0 2px 4px rgba(15, 23, 42, 0.15));
+  filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.35)) drop-shadow(0 2px 4px var(--shadow-color));
 }
 
 .forensic-cursor-container.cursor-card .cursor-lens-frame {

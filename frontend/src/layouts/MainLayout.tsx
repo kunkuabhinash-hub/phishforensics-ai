@@ -67,8 +67,8 @@ export default function MainLayout() {
           position: 'sticky', 
           top: 0, 
           zIndex: 100, 
-          backgroundColor: 'var(--bg-warm-white)', 
-          borderBottom: '1px solid var(--border-light)',
+          backgroundColor: 'var(--surface-elevated)', 
+          borderBottom: '1px solid var(--border-divider)',
           padding: '0.85rem 0'
         }}
       >
@@ -110,7 +110,7 @@ export default function MainLayout() {
               style={{
                 padding: '0.5rem 0.85rem',
                 backgroundColor: 'transparent',
-                border: '1px solid var(--border-light)',
+                border: '1px solid var(--border-divider)',
                 color: 'var(--text-primary)',
                 fontFamily: 'var(--font-mono)',
                 fontSize: '0.75rem',
@@ -157,7 +157,7 @@ export default function MainLayout() {
                 width: '34px',
                 height: '34px',
                 backgroundColor: 'transparent',
-                border: '1px solid var(--border-light)',
+                border: '1px solid var(--border-divider)',
                 color: 'var(--text-primary)',
                 borderRadius: 'var(--r-sm)',
                 cursor: 'pointer',
@@ -181,7 +181,7 @@ export default function MainLayout() {
       </main>
 
       {/* ─── FOOTER ───────────────────────────────────────────────────── */}
-      <footer style={{ borderTop: '1px solid var(--border-light)', padding: '4rem 0', backgroundColor: 'var(--bg-white)' }}>
+      <footer style={{ borderTop: '1px solid var(--border-divider)', padding: '4rem 0', backgroundColor: 'var(--surface-card)' }}>
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2rem' }}>
             <div>
@@ -212,7 +212,7 @@ export default function MainLayout() {
             </div>
           </div>
           
-          <div style={{ borderTop: '1px solid var(--border-light)', marginTop: '4rem', paddingTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ borderTop: '1px solid var(--border-divider)', marginTop: '4rem', paddingTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
             <p className="mono-label" style={{ fontSize: '0.65rem' }}>© 2026 PHISHFORENSICS AI. ALL RIGHTS RESERVED.</p>
             <p className="mono-label" style={{ fontSize: '0.65rem' }}>SECURE ANALYSIS ENVIRONMENT</p>
           </div>

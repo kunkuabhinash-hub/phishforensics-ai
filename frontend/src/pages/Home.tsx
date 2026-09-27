@@ -144,7 +144,7 @@ export default function Home() {
                 understandable security lesson.
               </p>
               
-              <form onSubmit={handleAnalyze} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '520px', backgroundColor: 'var(--bg-white)', padding: '2rem', border: '1px solid var(--border-light)', borderRadius: 'var(--r-md)' }}>
+              <form onSubmit={handleAnalyze} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '520px', backgroundColor: 'var(--surface-card)', padding: '2rem', border: '1px solid var(--border-divider)', borderRadius: 'var(--r-md)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <p className="mono-label" style={{ color: 'var(--text-primary)', margin: 0 }}>START AN INVESTIGATION</p>
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-muted)' }}>PASSIVE ONLY</span>
@@ -319,8 +319,8 @@ export default function Home() {
             </div>
             
             <div className="hero-visual" style={{ opacity: 0 }} ref={el => { if (el) el.classList.add('animate-fade-up', 'animate-delay-2'); }}>
-              <div style={{ backgroundColor: 'var(--bg-pure-white)', border: '1px solid var(--border-strong)', padding: '2.5rem', borderRadius: 'var(--r-md)', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }}>
-                <p className="mono-label" style={{ marginBottom: '2rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '1rem' }}>FORENSIC ANALYSIS PREVIEW</p>
+              <div style={{ backgroundColor: 'var(--surface-card)', border: '1px solid var(--border-bold)', padding: '2.5rem', borderRadius: 'var(--r-md)', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }}>
+                <p className="mono-label" style={{ marginBottom: '2rem', borderBottom: '1px solid var(--border-divider)', paddingBottom: '1rem' }}>FORENSIC ANALYSIS PREVIEW</p>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
                   <div>
@@ -341,7 +341,7 @@ export default function Home() {
                   </div>
                 </div>
                 
-                <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem' }}>
+                <div style={{ borderTop: '1px solid var(--border-divider)', paddingTop: '1.5rem' }}>
                   <p className="mono-label" style={{ marginBottom: '1rem' }}>ATTACK DNA FINGERPRINT</p>
                   {['Impersonation', 'Urgency', 'Credential Request'].map((trait, idx) => (
                     <div key={idx} style={{ marginBottom: '0.75rem' }}>
@@ -349,7 +349,7 @@ export default function Home() {
                         <span className="mono-label" style={{ fontSize: '0.65rem' }}>{trait.toUpperCase()}</span>
                         <span className="mono-label" style={{ fontSize: '0.65rem' }}>HIGH</span>
                       </div>
-                      <div style={{ width: '100%', height: '4px', backgroundColor: 'var(--bg-light)' }}>
+                      <div style={{ width: '100%', height: '4px', backgroundColor: 'var(--surface-hover)' }}>
                         <div style={{ width: `${80 - idx * 10}%`, height: '100%', backgroundColor: 'var(--danger)' }}></div>
                       </div>
                     </div>
@@ -363,13 +363,13 @@ export default function Home() {
       </section>
 
       {/* ─── HERO TRUST STRIP ──────────────────────────────────────────────── */}
-      <section className="section-light" style={{ borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)', padding: '2rem 0' }}>
+      <section className="section-light" style={{ borderTop: '1px solid var(--border-divider)', borderBottom: '1px solid var(--border-divider)', padding: '2rem 0' }}>
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
             {['AI THREAT ANALYSIS', 'ATTACK DNA', 'EMAIL FORENSICS', 'ATTACK RECONSTRUCTION', 'SAFE SIMULATION', 'SECURITY EDUCATION'].map((item, idx) => (
               <React.Fragment key={idx}>
                 <span className="mono-label" style={{ color: 'var(--text-primary)' }}>{item}</span>
-                {idx < 5 && <span style={{ color: 'var(--border-strong)' }}>|</span>}
+                {idx < 5 && <span style={{ color: 'var(--border-bold)' }}>|</span>}
               </React.Fragment>
             ))}
           </div>
@@ -428,8 +428,8 @@ export default function Home() {
                     className="hover-magnify-card" 
                     style={{ 
                       padding: '1.15rem 1.25rem', 
-                      backgroundColor: 'var(--bg-primary)', 
-                      border: '1px solid var(--border-light)', 
+                      backgroundColor: 'var(--bg-page)', 
+                      border: '1px solid var(--border-divider)', 
                       borderRadius: 'var(--r-sm)' 
                     }}
                   >
@@ -457,7 +457,7 @@ export default function Home() {
           </h2>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', flexWrap: 'wrap', gap: '1.5rem' }}>
-            <div style={{ position: 'absolute', top: '24px', left: 0, right: 0, height: '1px', backgroundColor: 'var(--border-light)', zIndex: 0, display: 'none' }} className="desktop-line"></div>
+            <div style={{ position: 'absolute', top: '24px', left: 0, right: 0, height: '1px', backgroundColor: 'var(--border-divider)', zIndex: 0, display: 'none' }} className="desktop-line"></div>
             
             {[
               { num: '01', title: 'INPUT ARTIFACT', desc: 'Submit suspicious email text, headers, URL, or image artifact for automated intake.' },
@@ -473,9 +473,9 @@ export default function Home() {
                   flex: '1 1 200px', 
                   position: 'relative', 
                   zIndex: 1, 
-                  backgroundColor: 'var(--bg-pure-white)', 
+                  backgroundColor: 'var(--surface-card)', 
                   padding: '1.5rem',
-                  border: '1px solid var(--border-light)',
+                  border: '1px solid var(--border-divider)',
                   borderRadius: 'var(--r-sm)'
                 }}
               >
@@ -506,7 +506,7 @@ export default function Home() {
               </p>
             </div>
             
-            <div style={{ padding: '3rem', border: '1px solid rgba(255,255,255,0.1)', backgroundColor: 'rgba(255,255,255,0.03)' }}>
+            <div style={{ padding: '3rem', border: '1px solid var(--border-divider)', backgroundColor: 'var(--surface-card)' }}>
               {[
                 { label: 'IMPERSONATION', val: 85 },
                 { label: 'URGENCY', val: 92 },
@@ -517,10 +517,10 @@ export default function Home() {
               ].map((dna, idx) => (
                 <div key={idx} style={{ marginBottom: '1.5rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span className="mono-label" style={{ color: 'rgba(255,255,255,0.7)' }}>{dna.label}</span>
+                    <span className="mono-label" style={{ color: 'var(--text-secondary)' }}>{dna.label}</span>
                     <span className="mono-label" style={{ color: 'var(--cyan-accent)' }}>{dna.val}%</span>
                   </div>
-                  <div style={{ width: '100%', height: '2px', backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                  <div style={{ width: '100%', height: '2px', backgroundColor: 'var(--surface-hover)' }}>
                     <div style={{ width: `${dna.val}%`, height: '100%', backgroundColor: 'var(--cyan-accent)' }}></div>
                   </div>
                 </div>
@@ -542,7 +542,7 @@ export default function Home() {
           </h2>
           
           <div style={{ maxWidth: '800px', position: 'relative', paddingLeft: '3rem' }}>
-            <div style={{ position: 'absolute', left: '11px', top: 0, bottom: 0, width: '1px', backgroundColor: 'var(--border-strong)' }}></div>
+            <div style={{ position: 'absolute', left: '11px', top: 0, bottom: 0, width: '1px', backgroundColor: 'var(--border-bold)' }}></div>
             
             {[
               { num: '01', title: 'BUILD TRUST', desc: 'Attacker sends email appearing to be from IT Support.' },
@@ -552,7 +552,7 @@ export default function Home() {
               { num: '05', title: 'POTENTIAL COMPROMISE', desc: 'Attacker harvests credentials and redirects victim.' }
             ].map((stage, idx) => (
               <div key={idx} style={{ position: 'relative', marginBottom: '3rem' }}>
-                <div style={{ position: 'absolute', left: '-3.4rem', top: '0.5rem', width: '12px', height: '12px', borderRadius: '50%', border: '2px solid var(--blue-primary)', backgroundColor: 'var(--bg-pure-white)' }}></div>
+                <div style={{ position: 'absolute', left: '-3.4rem', top: '0.5rem', width: '12px', height: '12px', borderRadius: '50%', border: '2px solid var(--blue-primary)', backgroundColor: 'var(--surface-card)' }}></div>
                 <p className="mono-label" style={{ color: 'var(--blue-primary)', marginBottom: '0.5rem' }}>STAGE {stage.num}</p>
                 <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{stage.title}</h3>
                 <p className="editorial-body" style={{ fontSize: '1rem' }}>{stage.desc}</p>
@@ -570,18 +570,18 @@ export default function Home() {
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.5rem', gridAutoRows: 'minmax(150px, auto)' }}>
             
-            <div style={{ gridColumn: 'span 8', backgroundColor: 'var(--bg-pure-white)', padding: '2rem', border: '1px solid var(--border-light)' }}>
+            <div style={{ gridColumn: 'span 8', backgroundColor: 'var(--surface-card)', padding: '2rem', border: '1px solid var(--border-divider)' }}>
               <p className="mono-label" style={{ marginBottom: '1rem' }}>EMAIL HEADERS</p>
               <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Deep Header Analysis</h3>
               <p style={{ color: 'var(--text-secondary)' }}>Identifying spoofing through Return-Path mismatches, suspicious X-Mailer fields, and unusual relay chains.</p>
             </div>
             
-            <div style={{ gridColumn: 'span 4', backgroundColor: 'var(--bg-pure-white)', padding: '2rem', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ gridColumn: 'span 4', backgroundColor: 'var(--surface-card)', padding: '2rem', border: '1px solid var(--border-divider)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <p className="mono-label" style={{ marginBottom: '1rem' }}>SPF / DKIM / DMARC</p>
               <p style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--danger)' }}>FAIL</p>
             </div>
             
-            <div style={{ gridColumn: 'span 4', backgroundColor: 'var(--bg-pure-white)', padding: '2rem', border: '1px solid var(--border-light)' }}>
+            <div style={{ gridColumn: 'span 4', backgroundColor: 'var(--surface-card)', padding: '2rem', border: '1px solid var(--border-divider)' }}>
               <p className="mono-label" style={{ marginBottom: '1rem' }}>LOOKALIKE DOMAINS</p>
               <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', color: 'var(--text-primary)', wordBreak: 'break-all' }}>
                 rnicrosoft.com<br/>
@@ -589,7 +589,7 @@ export default function Home() {
               </p>
             </div>
             
-            <div style={{ gridColumn: 'span 8', backgroundColor: 'var(--bg-pure-white)', padding: '2rem', border: '1px solid var(--border-light)' }}>
+            <div style={{ gridColumn: 'span 8', backgroundColor: 'var(--surface-card)', padding: '2rem', border: '1px solid var(--border-divider)' }}>
               <p className="mono-label" style={{ marginBottom: '1rem' }}>URL & ATTACHMENT ANALYSIS</p>
               <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Payload Extraction</h3>
               <p style={{ color: 'var(--text-secondary)' }}>Safe extraction of obfuscated URLs, shortened links, and suspicious file hashes without execution.</p>
@@ -652,13 +652,13 @@ export default function Home() {
                 key={idx} 
                 className="hover-magnify-card" 
                 style={{ 
-                  backgroundColor: 'var(--bg-primary)', 
+                  backgroundColor: 'var(--bg-page)', 
                   padding: '1.75rem', 
-                  border: '1px solid var(--border-light)', 
+                  border: '1px solid var(--border-divider)', 
                   borderRadius: 'var(--r-sm)' 
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.85rem', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', borderBottom: '1px solid var(--border-divider)', paddingBottom: '0.85rem', marginBottom: '1rem' }}>
                   <span className="mono-label" style={{ color: 'var(--blue-primary)', fontWeight: 800 }}>{cap.num}</span>
                   <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{cap.title}</h4>
                 </div>
@@ -707,9 +707,9 @@ export default function Home() {
                 key={idx} 
                 className="hover-magnify-card" 
                 style={{ 
-                  backgroundColor: 'var(--bg-pure-white)', 
+                  backgroundColor: 'var(--surface-card)', 
                   padding: '2rem', 
-                  border: '1px solid var(--border-light)', 
+                  border: '1px solid var(--border-divider)', 
                   borderRadius: 'var(--r-sm)' 
                 }}
               >
@@ -742,12 +742,12 @@ export default function Home() {
                 consequence path without executing malicious activity. We map the attacker's expected outcome to show the true risk.
               </p>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', borderLeft: '1px solid var(--border-strong)', paddingLeft: '2rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', borderLeft: '1px solid var(--border-bold)', paddingLeft: '2rem' }}>
               <p className="mono-label" style={{ color: 'var(--blue-primary)' }}>SAFE SIMULATION PATH</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}><span className="mono-label">MESSAGE</span> <span style={{ color: 'var(--border-strong)' }}>→</span></div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}><span className="mono-label">VICTIM ACTION</span> <span style={{ color: 'var(--border-strong)' }}>→</span></div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}><span className="mono-label">CREDENTIAL REQUEST</span> <span style={{ color: 'var(--border-strong)' }}>→</span></div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}><span className="mono-label" style={{ color: 'var(--warning)' }}>ACCOUNT RISK</span> <span style={{ color: 'var(--border-strong)' }}>→</span></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}><span className="mono-label">MESSAGE</span> <span style={{ color: 'var(--border-bold)' }}>→</span></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}><span className="mono-label">VICTIM ACTION</span> <span style={{ color: 'var(--border-bold)' }}>→</span></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}><span className="mono-label">CREDENTIAL REQUEST</span> <span style={{ color: 'var(--border-bold)' }}>→</span></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}><span className="mono-label" style={{ color: 'var(--warning)' }}>ACCOUNT RISK</span> <span style={{ color: 'var(--border-bold)' }}>→</span></div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}><span className="mono-label" style={{ color: 'var(--danger)' }}>DATA EXPOSURE</span></div>
             </div>
           </div>
@@ -770,7 +770,7 @@ export default function Home() {
               'WHAT THE ATTACKER WANTED',
               'WHAT TO CHECK NEXT TIME'
             ].map((statement, idx) => (
-              <div key={idx} style={{ padding: '3rem 2rem', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-warm-white)' }}>
+              <div key={idx} style={{ padding: '3rem 2rem', border: '1px solid var(--border-divider)', backgroundColor: 'var(--surface-elevated)' }}>
                 <h3 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>{statement}</h3>
               </div>
             ))}
@@ -784,19 +784,19 @@ export default function Home() {
           <h2 className="section-title" style={{ textAlign: 'center', marginBottom: '4rem' }}>UNDER THE INTERFACE.</h2>
           
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', fontFamily: 'var(--font-mono)', fontSize: '0.875rem', letterSpacing: '0.05em' }}>
-            <div style={{ padding: '1rem 2rem', border: '1px solid var(--border-strong)', backgroundColor: 'var(--bg-pure-white)' }}>USER INPUT</div>
-            <div style={{ height: '20px', width: '1px', backgroundColor: 'var(--border-strong)' }}></div>
-            <div style={{ padding: '1rem 2rem', border: '1px solid var(--border-strong)', backgroundColor: 'var(--bg-pure-white)' }}>FRONTEND (REACT)</div>
-            <div style={{ height: '20px', width: '1px', backgroundColor: 'var(--border-strong)' }}></div>
-            <div style={{ padding: '1rem 2rem', border: '1px solid var(--border-strong)', backgroundColor: 'var(--bg-pure-white)' }}>BACKEND API</div>
-            <div style={{ height: '20px', width: '1px', backgroundColor: 'var(--border-strong)' }}></div>
+            <div style={{ padding: '1rem 2rem', border: '1px solid var(--border-bold)', backgroundColor: 'var(--surface-card)' }}>USER INPUT</div>
+            <div style={{ height: '20px', width: '1px', backgroundColor: 'var(--border-bold)' }}></div>
+            <div style={{ padding: '1rem 2rem', border: '1px solid var(--border-bold)', backgroundColor: 'var(--surface-card)' }}>FRONTEND (REACT)</div>
+            <div style={{ height: '20px', width: '1px', backgroundColor: 'var(--border-bold)' }}></div>
+            <div style={{ padding: '1rem 2rem', border: '1px solid var(--border-bold)', backgroundColor: 'var(--surface-card)' }}>BACKEND API</div>
+            <div style={{ height: '20px', width: '1px', backgroundColor: 'var(--border-bold)' }}></div>
             <div style={{ padding: '1rem 2rem', border: '1px solid var(--blue-primary)', backgroundColor: 'rgba(37,99,235,0.05)', color: 'var(--blue-primary)', fontWeight: 600 }}>AI ANALYSIS ENGINE</div>
-            <div style={{ height: '20px', width: '1px', backgroundColor: 'var(--border-strong)' }}></div>
+            <div style={{ height: '20px', width: '1px', backgroundColor: 'var(--border-bold)' }}></div>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-              <div style={{ padding: '0.75rem 1.5rem', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-pure-white)' }}>THREAT RESULT</div>
-              <div style={{ padding: '0.75rem 1.5rem', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-pure-white)' }}>ATTACK DNA</div>
-              <div style={{ padding: '0.75rem 1.5rem', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-pure-white)' }}>RECONSTRUCTION</div>
-              <div style={{ padding: '0.75rem 1.5rem', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-pure-white)' }}>EDUCATION</div>
+              <div style={{ padding: '0.75rem 1.5rem', border: '1px solid var(--border-divider)', backgroundColor: 'var(--surface-card)' }}>THREAT RESULT</div>
+              <div style={{ padding: '0.75rem 1.5rem', border: '1px solid var(--border-divider)', backgroundColor: 'var(--surface-card)' }}>ATTACK DNA</div>
+              <div style={{ padding: '0.75rem 1.5rem', border: '1px solid var(--border-divider)', backgroundColor: 'var(--surface-card)' }}>RECONSTRUCTION</div>
+              <div style={{ padding: '0.75rem 1.5rem', border: '1px solid var(--border-divider)', backgroundColor: 'var(--surface-card)' }}>EDUCATION</div>
             </div>
           </div>
         </div>
@@ -809,19 +809,19 @@ export default function Home() {
             <h2 className="section-title">FROM HOMEPAGE<br/>TO INVESTIGATION.</h2>
           </div>
           
-          <div style={{ maxWidth: '900px', margin: '0 auto', border: '1px solid var(--border-light)', borderRadius: 'var(--r-md)', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)' }}>
-            <div style={{ backgroundColor: 'var(--bg-light)', padding: '1rem 2rem', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto', border: '1px solid var(--border-divider)', borderRadius: 'var(--r-md)', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)' }}>
+            <div style={{ backgroundColor: 'var(--surface-hover)', padding: '1rem 2rem', borderBottom: '1px solid var(--border-divider)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{ display: 'flex', gap: '6px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--border-strong)' }}></div>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--border-strong)' }}></div>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--border-strong)' }}></div>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--border-bold)' }}></div>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--border-bold)' }}></div>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--border-bold)' }}></div>
               </div>
               <p className="mono-label" style={{ fontSize: '0.65rem' }}>DASHBOARD PREVIEW</p>
             </div>
             
-            <div style={{ padding: '3rem', backgroundColor: 'var(--bg-pure-white)' }}>
+            <div style={{ padding: '3rem', backgroundColor: 'var(--surface-card)' }}>
               <p className="mono-label" style={{ marginBottom: '1rem' }}>INVESTIGATION / PH-8924</p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem', borderBottom: '1px solid var(--border-divider)', paddingBottom: '2rem' }}>
                 <h3 style={{ fontSize: '2rem', fontWeight: 800 }}>FORENSIC REPORT</h3>
                 <div style={{ textAlign: 'right' }}>
                   <p className="mono-label" style={{ marginBottom: '0.5rem' }}>RISK SCORE</p>

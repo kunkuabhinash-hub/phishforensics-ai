@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import ForensicCursor from '../components/ForensicCursor';
 import InvestigationHistoryModal from '../components/InvestigationHistoryModal';
@@ -8,11 +8,29 @@ export default function MainLayout() {
   const navigate = useNavigate();
   const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
 
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('theme');
+    return (saved === 'light') ? 'light' : 'dark';
+  });
+
+  useEffect(() => {
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
   const navItems = [
-    { label: 'PRODUCTS', id: 'products' },
-    { label: 'SOLUTIONS', id: 'solutions' },
     { label: 'WHY US?', id: 'why-us' },
     { label: 'HOW IT WORKS', id: 'how-it-works' },
+    { label: 'PRODUCTS', id: 'products' },
+    { label: 'SOLUTIONS', id: 'solutions' },
   ];
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
@@ -128,6 +146,31 @@ export default function MainLayout() {
             >
               ANALYZE THREAT
             </a>
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle light/dark theme"
+              className="nav-link-item"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '34px',
+                height: '34px',
+                backgroundColor: 'transparent',
+                border: '1px solid var(--border-light)',
+                color: 'var(--text-primary)',
+                borderRadius: 'var(--r-sm)',
+                cursor: 'pointer',
+                transition: 'all 150ms ease',
+                flexShrink: 0
+              }}
+            >
+              {theme === 'dark' ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+              )}
+            </button>
           </div>
         </div>
       </header>
